@@ -33,19 +33,18 @@ class SubscriptionInformation extends Entity
         return $this->type;
     }
 
+    /**
+     * @return NameValuePair[]
+     */
     public function instrument(): array
     {
         return $this->instrument;
     }
 
-    public function setInstrument($instrumentData): self
+    public function setInstrument(array $instrumentData): self
     {
         $this->instrument = [];
-        if (isset($instrumentData['item'])) {
-            $instrumentData = $instrumentData['item'];
-        }
-
-        foreach ($instrumentData as $nvp) {
+        foreach ($instrumentData['item'] ?? $instrumentData as $nvp) {
             if (is_array($nvp)) {
                 $nvp = new NameValuePair($nvp);
             }
@@ -59,22 +58,14 @@ class SubscriptionInformation extends Entity
 
     public function instrumentToArray(): array
     {
-        if ($this->instrument()) {
-            $instrument = [];
-            foreach ($this->instrument() as $field) {
-                $instrument[] = ($field instanceof NameValuePair) ? $field->toArray() : null;
-            }
-            return $instrument;
-        }
-        return [];
+        return array_map(fn (NameValuePair $field) => $field->toArray(), $this->instrument());
     }
 
     /**
      * Parses the instrument as the proper entity, Keep in mind that can be null
      * if no instrument its provided.
-     * @return Account|Token|null
      */
-    public function parseInstrument()
+    public function parseInstrument(): Account|Token|null
     {
         $instrumentNVP = $this->instrument();
         if (!$instrumentNVP) {
@@ -88,12 +79,11 @@ class SubscriptionInformation extends Entity
             $data[$nvp->keyword()] = $nvp->value();
         }
 
-        if ($this->type() == 'token') {
-            return new Token($data);
-        } elseif ($this->type() == 'account') {
-            return new Account($data);
-        }
-        return null;
+        return match ($this->type()) {
+            'token' => new Token($data),
+            'account' => new Account($data),
+            default => null,
+        };
     }
 
     public function toArray(): array

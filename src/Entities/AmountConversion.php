@@ -10,7 +10,7 @@ class AmountConversion extends Entity
     protected ?AmountBase $to = null;
     protected float $factor = 1;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         if (isset($data['from'])) {
             $this->setFrom($data['from']);
@@ -27,10 +27,8 @@ class AmountConversion extends Entity
 
     /**
      * Helper function to quickly set all the values.
-     * @param $base
-     * @return $this
      */
-    public function setAmountBase($base)
+    public function setAmountBase(AmountBase|array $base): static
     {
         if (is_array($base)) {
             $base = new AmountBase($base);
@@ -42,40 +40,34 @@ class AmountConversion extends Entity
         return $this;
     }
 
-    /**
-     * @return AmountBase
-     */
     public function from(): AmountBase
     {
         return $this->from;
     }
 
-    /**
-     * @return AmountBase
-     */
     public function to(): AmountBase
     {
         return $this->to;
     }
 
-    public function factor()
+    public function factor(): float
     {
         return $this->factor;
     }
 
-    public function setFrom($from)
+    public function setFrom(AmountBase|array|null $from): static
     {
         $this->loadEntity($from, 'from', AmountBase::class);
         return $this;
     }
 
-    public function setTo($to)
+    public function setTo(AmountBase|array|null $to): static
     {
         $this->loadEntity($to, 'to', AmountBase::class);
         return $this;
     }
 
-    public function setFactor($factor)
+    public function setFactor(float $factor): static
     {
         $this->factor = $factor;
         return $this;

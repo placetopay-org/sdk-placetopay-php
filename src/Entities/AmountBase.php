@@ -9,7 +9,7 @@ class AmountBase extends Entity
     protected string $currency = 'COP';
     protected float $total;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['currency', 'total']);
     }

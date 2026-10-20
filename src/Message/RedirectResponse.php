@@ -10,10 +10,10 @@ class RedirectResponse extends Entity
 {
     use StatusTrait;
 
-    protected string $requestId = '';
+    protected ?int $requestId = null;
     protected string $processUrl = '';
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['requestId', 'processUrl']);
         $this->loadEntity($data['status'], 'status', Status::class);
@@ -22,7 +22,7 @@ class RedirectResponse extends Entity
     /**
      * Unique transaction code for this request.
      */
-    public function requestId(): string
+    public function requestId(): ?int
     {
         return $this->requestId;
     }

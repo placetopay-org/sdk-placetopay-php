@@ -12,7 +12,7 @@ class Discount extends Entity
     protected float $base;
     protected ?float $percent = null;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['code', 'type', 'amount', 'base', 'percent']);
     }

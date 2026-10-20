@@ -18,12 +18,15 @@ class DispersionPayment extends Payment
         }
     }
 
+    /**
+     * @return Payment[]
+     */
     public function dispersion(): array
     {
         return $this->dispersion;
     }
 
-    public function setDispersion($data): self
+    public function setDispersion(array $data): self
     {
         foreach ($data as $payment) {
             $entity = new Payment($payment);
@@ -36,13 +39,7 @@ class DispersionPayment extends Payment
 
     protected function dispersionToArray(): array
     {
-        $data = [];
-        if ($this->dispersion) {
-            foreach ($this->dispersion as $payment) {
-                $data[] = $payment->toArray();
-            }
-        }
-        return $data;
+        return array_map(fn (Payment $payment) => $payment->toArray(), $this->dispersion);
     }
 
     public function toArray(): array

@@ -13,7 +13,7 @@ class Item extends Entity
     protected string $price = '';
     protected string $tax = '';
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['sku', 'name', 'category', 'qty', 'price', 'tax']);
     }

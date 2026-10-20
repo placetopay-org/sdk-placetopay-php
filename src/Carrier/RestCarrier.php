@@ -18,7 +18,7 @@ class RestCarrier extends Carrier
     private function makeRequest(string $url, array $arguments): array
     {
         try {
-            $data = array_merge($arguments, ['auth' => $this->settings->authentication()->asArray()]);
+            $data = [...$arguments, 'auth' => $this->settings->authentication()->asArray()];
 
             $this->settings->logger()->debug('REQUEST', $data);
 
@@ -36,7 +36,7 @@ class RestCarrier extends Carrier
             $statusCode = $exception->getResponse()->getStatusCode();
             $result = $exception->getResponse()->getBody()->getContents();
             $this->settings->logger()->warning('BAD_RESPONSE', [
-                'class' => get_class($exception),
+                'class' => $exception::class,
                 'result' => $result,
             ]);
         } catch (Throwable $exception) {
@@ -57,27 +57,29 @@ class RestCarrier extends Carrier
 
     public function request(RedirectRequest $redirectRequest): RedirectResponse
     {
-        $result = $this->makeRequest($this->settings->baseUrl('api/session'), $redirectRequest->toArray());
-        return new RedirectResponse($result);
+        return new RedirectResponse(
+            $this->makeRequest($this->settings->baseUrl('api/session'), $redirectRequest->toArray())
+        );
     }
 
-    public function query(string $requestId): RedirectInformation
+    public function query(int $requestId): RedirectInformation
     {
-        $result = $this->makeRequest($this->settings->baseUrl('api/session/' . $requestId), []);
-        return new RedirectInformation($result);
+        return new RedirectInformation(
+            $this->makeRequest($this->settings->baseUrl('api/session/' . $requestId), [])
+        );
     }
 
     public function collect(CollectRequest $collectRequest): RedirectInformation
     {
-        $result = $this->makeRequest($this->settings->baseUrl('api/collect'), $collectRequest->toArray());
-        return new RedirectInformation($result);
+        return new RedirectInformation(
+            $this->makeRequest($this->settings->baseUrl('api/collect'), $collectRequest->toArray())
+        );
     }
 
-    public function reverse(string $transactionId): ReverseResponse
+    public function reverse(int $internalReference): ReverseResponse
     {
-        $result = $this->makeRequest($this->settings->baseUrl('api/reverse'), [
-            'internalReference' => $transactionId,
-        ]);
-        return new ReverseResponse($result);
+        return new ReverseResponse(
+            $this->makeRequest($this->settings->baseUrl('api/reverse'), ['internalReference' => $internalReference])
+        );
     }
 }

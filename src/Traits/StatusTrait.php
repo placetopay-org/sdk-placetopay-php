@@ -3,12 +3,10 @@
 namespace PlacetoPay\PlacetoPaySdk\Traits;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 
 trait StatusTrait
 {
-    /**
-     * @var Status
-     */
     protected Status $status;
 
     public function status(): Status
@@ -18,16 +16,16 @@ trait StatusTrait
 
     public function isApproved(): bool
     {
-        return $this->status()->status() == Status::ST_APPROVED;
+        return $this->status()->isApproved();
     }
 
     public function isSuccessful(): bool
     {
-        return !in_array($this->status()->status(), [Status::ST_ERROR, Status::ST_FAILED]);
+        return !in_array($this->status()->type(), [StatusType::ERROR, StatusType::FAILED], true);
     }
 
     public function isRejected(): bool
     {
-        return $this->status()->status() == Status::ST_REJECTED;
+        return $this->status()->isRejected();
     }
 }

@@ -3,6 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Tests\Messages;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Message\RedirectResponse;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -11,7 +12,7 @@ class RedirectResponseTest extends BaseTestCase
     public function testRedirectionResponse()
     {
         $carrierResponse = new RedirectResponse([
-            'status' => Status::quick(Status::ST_OK, '00'),
+            'status' => Status::quick(StatusType::OK, '00'),
             'requestId' => rand(0, 100000),
             'processUrl' => 'http://localhost/payment/process',
         ]);

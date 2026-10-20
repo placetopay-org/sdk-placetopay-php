@@ -3,7 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Entities;
 
 use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
-use PlacetoPay\PlacetoPaySdk\Helpers\DocumentHelper;
+use PlacetoPay\PlacetoPaySdk\Enums\DocumentType;
 
 class Person extends Entity
 {
@@ -16,7 +16,7 @@ class Person extends Entity
     protected string $mobile = '';
     protected ?Address $address = null;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['document', 'documentType', 'name', 'surname', 'company', 'email', 'mobile']);
         $this->loadEntity($data['address'] ?? null, 'address', Address::class);
@@ -64,7 +64,7 @@ class Person extends Entity
 
     public function isBusiness(): bool
     {
-        return $this->documentType() && DocumentHelper::businessDocument($this->documentType());
+        return DocumentType::tryFrom($this->documentType())?->isBusiness() ?? false;
     }
 
     public function toArray(): array
@@ -77,7 +77,7 @@ class Person extends Entity
             'email' => $this->email(),
             'mobile' => $this->mobile(),
             'company' => $this->company(),
-            'address' => $this->address() ? $this->address()->toArray() : null,
+            'address' => $this->address()?->toArray(),
         ]);
     }
 }

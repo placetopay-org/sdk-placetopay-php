@@ -2,8 +2,8 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Messages;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
 use PlacetoPay\PlacetoPaySdk\Entities\Token;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Helpers\ArrayHelper;
 use PlacetoPay\PlacetoPaySdk\Message\RedirectInformation;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
@@ -16,7 +16,7 @@ class RedirectInformationTest extends BaseTestCase
         $information = new RedirectInformation($result);
 
         $this->assertEquals(371, $information->requestId());
-        $this->assertEquals(Status::ST_PENDING, $information->status()->status());
+        $this->assertSame(StatusType::PENDING, $information->status()->type());
 
         $this->assertTrue($information->isSuccessful());
         $this->assertFalse($information->isApproved());
@@ -35,7 +35,7 @@ class RedirectInformationTest extends BaseTestCase
         $information = new RedirectInformation($result);
 
         $this->assertEquals(368, $information->requestId());
-        $this->assertEquals(Status::ST_PENDING, $information->status()->status());
+        $this->assertSame(StatusType::PENDING, $information->status()->type());
 
         $this->assertTrue($information->isSuccessful());
         $this->assertFalse($information->isApproved());
@@ -56,7 +56,7 @@ class RedirectInformationTest extends BaseTestCase
         $information = new RedirectInformation($result);
 
         $this->assertEquals(360, $information->requestId());
-        $this->assertEquals(Status::ST_APPROVED, $information->status()->status());
+        $this->assertSame(StatusType::APPROVED, $information->status()->type());
 
         $this->assertTrue($information->isSuccessful());
         $this->assertTrue($information->isApproved());
@@ -84,7 +84,7 @@ class RedirectInformationTest extends BaseTestCase
         $information = new RedirectInformation($result);
 
         $this->assertEquals(372, $information->requestId());
-        $this->assertEquals(Status::ST_APPROVED, $information->status()->status());
+        $this->assertSame(StatusType::APPROVED, $information->status()->type());
 
         $this->assertTrue($information->isSuccessful());
         $this->assertTrue($information->isApproved());
@@ -125,7 +125,7 @@ class RedirectInformationTest extends BaseTestCase
         $information = new RedirectInformation($result);
 
         $this->assertEquals(373, $information->requestId());
-        $this->assertEquals(Status::ST_REJECTED, $information->status()->status());
+        $this->assertSame(StatusType::REJECTED, $information->status()->type());
         $this->assertTrue($information->status()->isRejected());
 
         $this->assertTrue($information->isSuccessful());

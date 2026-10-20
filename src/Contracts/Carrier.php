@@ -11,18 +11,15 @@ use PlacetoPay\PlacetoPaySdk\Message\ReverseResponse;
 
 abstract class Carrier
 {
-    protected Settings $settings;
-
-    public function __construct(Settings $settings)
+    public function __construct(protected readonly Settings $settings)
     {
-        $this->settings = $settings;
     }
 
     abstract public function request(RedirectRequest $redirectRequest): RedirectResponse;
 
-    abstract public function query(string $requestId): RedirectInformation;
+    abstract public function query(int $requestId): RedirectInformation;
 
     abstract public function collect(CollectRequest $collectRequest): RedirectInformation;
 
-    abstract public function reverse(string $transactionId): ReverseResponse;
+    abstract public function reverse(int $internalReference): ReverseResponse;
 }

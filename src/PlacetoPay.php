@@ -13,26 +13,28 @@ use PlacetoPay\PlacetoPaySdk\Message\ReverseResponse;
 
 class PlacetoPay
 {
-    protected Settings $settings;
+    protected readonly Settings $settings;
 
+    /**
+     * @throws PlacetoPayException
+     */
     public function __construct(array $data)
     {
         $this->settings = new Settings($data);
     }
 
     /**
+     * Accepts mixed so anything other than an array or RedirectRequest raises a PlacetoPayException.
      * @param RedirectRequest|array $redirectRequest
      * @throws PlacetoPayException
      */
-    public function request($redirectRequest): RedirectResponse
+    public function request(mixed $redirectRequest): RedirectResponse
     {
-        if (is_array($redirectRequest)) {
-            $redirectRequest = new RedirectRequest($redirectRequest);
-        }
-
-        if (!($redirectRequest instanceof RedirectRequest)) {
-            throw PlacetoPayException::forDataNotProvided('Wrong class request');
-        }
+        $redirectRequest = match (true) {
+            is_array($redirectRequest) => new RedirectRequest($redirectRequest),
+            $redirectRequest instanceof RedirectRequest => $redirectRequest,
+            default => throw PlacetoPayException::forDataNotProvided('Wrong class request'),
+        };
 
         return $this->settings->carrier()->request($redirectRequest);
     }
@@ -43,23 +45,22 @@ class PlacetoPay
     }
 
     /**
+     * Accepts mixed so anything other than an array or CollectRequest raises a PlacetoPayException.
      * @param CollectRequest|array $collectRequest
      * @throws PlacetoPayException
      */
-    public function collect($collectRequest): RedirectInformation
+    public function collect(mixed $collectRequest): RedirectInformation
     {
-        if (is_array($collectRequest)) {
-            $collectRequest = new CollectRequest($collectRequest);
-        }
-
-        if (!($collectRequest instanceof CollectRequest)) {
-            throw new PlacetoPayException('Wrong collect request');
-        }
+        $collectRequest = match (true) {
+            is_array($collectRequest) => new CollectRequest($collectRequest),
+            $collectRequest instanceof CollectRequest => $collectRequest,
+            default => throw new PlacetoPayException('Wrong collect request'),
+        };
 
         return $this->settings->carrier()->collect($collectRequest);
     }
 
-    public function reverse(string $internalReference): ReverseResponse
+    public function reverse(int $internalReference): ReverseResponse
     {
         return $this->settings->carrier()->reverse($internalReference);
     }

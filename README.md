@@ -12,6 +12,8 @@ In order to see more comprehensive examples of how it works, please refer to the
 
 ## Installation
 
+Requires PHP 8.1 or higher.
+
 Using composer from your project
 
 ```

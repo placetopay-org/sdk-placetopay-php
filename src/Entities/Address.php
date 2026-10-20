@@ -13,7 +13,7 @@ class Address extends Entity
     protected string $country = '';
     protected string $phone = '';
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['street', 'city', 'state', 'postalCode', 'phone', 'country']);
     }

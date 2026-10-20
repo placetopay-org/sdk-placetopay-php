@@ -2,8 +2,8 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Functionality;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
 use PlacetoPay\PlacetoPaySdk\Entities\Transaction;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -42,7 +42,7 @@ class ServiceCollectTest extends BaseTestCase
 
         $this->assertTrue($response->isSuccessful());
         $this->assertNotEmpty($response->requestId());
-        $this->assertEquals(Status::ST_PENDING, $response->status()->status());
+        $this->assertSame(StatusType::PENDING, $response->status()->type());
     }
 
     public function testItThrowsExceptionWhenBadArgumentProvided()

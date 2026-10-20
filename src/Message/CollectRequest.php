@@ -33,7 +33,7 @@ class CollectRequest extends RedirectRequest
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'instrument' => $this->instrument() ? $this->instrument()->toArray() : null,
+            'instrument' => $this->instrument()?->toArray(),
             'provider' => $this->provider(),
         ]);
     }

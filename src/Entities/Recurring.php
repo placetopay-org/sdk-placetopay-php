@@ -23,7 +23,7 @@ class Recurring extends Entity
     protected string $dueDate = '';
     protected string $notificationUrl = '';
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['periodicity', 'interval', 'maxPeriods', 'nextPayment', 'dueDate', 'notificationUrl']);
     }

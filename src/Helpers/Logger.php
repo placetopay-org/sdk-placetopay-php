@@ -3,6 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Helpers;
 
 use Psr\Log\LoggerInterface;
+use Stringable;
 
 /**
  * @method void emergency(string $message, array $context = [])
@@ -16,27 +17,22 @@ use Psr\Log\LoggerInterface;
  */
 class Logger
 {
-    protected ?LoggerInterface $logger = null;
-
-    public function __construct(?LoggerInterface $logger = null)
+    public function __construct(protected readonly ?LoggerInterface $logger = null)
     {
-        $this->logger = $logger;
     }
 
-    public function log($level, $message, array $context = []): void
+    public function log(string $level, string|Stringable $message, array $context = []): void
     {
-        if ($this->logger) {
-            $this->logger->log($level, '(REDIRECTION_LOG) ' . $message, $this->cleanUp($context));
-        }
+        $this->logger?->log($level, '(REDIRECTION_LOG) ' . $message, $this->cleanUp($context));
     }
 
-    public function __call($name, $arguments)
+    public function __call(string $name, array $arguments): void
     {
         $this->log($name, $arguments[0], $arguments[1] ?? []);
     }
 
-    public function cleanUp($mixed): array
+    public function cleanUp(mixed $context): array
     {
-        return $mixed ?: [];
+        return $context ?: [];
     }
 }

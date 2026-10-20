@@ -2,7 +2,7 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Messages;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Message\Notification;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -33,7 +33,7 @@ class NotificationTest extends BaseTestCase
         $notification = $gateway->readNotification($data);
 
         $this->assertTrue($notification->isValidNotification(), 'Its a valid notification');
-        $this->assertEquals(Status::ST_REJECTED, $notification->status()->status());
+        $this->assertSame(StatusType::REJECTED, $notification->status()->type());
         $this->assertFalse($notification->isApproved());
     }
 }

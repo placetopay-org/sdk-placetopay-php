@@ -10,7 +10,7 @@ class TaxDetail extends Entity
     protected float $amount;
     protected ?float $base = null;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['kind', 'amount', 'base']);
     }

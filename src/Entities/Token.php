@@ -17,7 +17,7 @@ class Token extends Entity
     protected string $cvv = '';
     protected int $installments = 0;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['token', 'subtoken', 'franchise', 'franchiseName', 'issuerName', 'lastDigits', 'validUntil', 'cvv', 'installments']);
     }
@@ -64,7 +64,7 @@ class Token extends Entity
 
     public function installments(): string
     {
-        return $this->installments;
+        return (string)$this->installments;
     }
 
     public function expiration(): string

@@ -79,7 +79,10 @@ class RestCarrier extends Carrier
     public function reverse(int $internalReference): ReverseResponse
     {
         return new ReverseResponse(
-            $this->makeRequest($this->settings->baseUrl('api/reverse'), ['internalReference' => $internalReference])
+            $this->makeRequest($this->settings->baseUrl('api/transaction'), [
+                'internalReference' => $internalReference,
+                'action' => 'reverse',
+            ])
         );
     }
 }

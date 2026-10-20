@@ -9,9 +9,18 @@ use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class ServiceCollectTest extends BaseTestCase
 {
+    private const PAYER = [
+        'documentType' => 'CC',
+        'document' => '1040035020',
+        'name' => 'Cassie',
+        'surname' => 'Walsh',
+        'email' => 'lance04@lockman.com',
+    ];
+
     public function testItHandlesAnApprovedCollect()
     {
         $response = $this->getService()->collect($this->baseRequest([
+            'payer' => self::PAYER,
             'instrument' => [
                 'token' => [
                     'token' => 'cbdfb8e3304270a8ef107eeb19729f397a1fe1e045bf2e704e4f62c5242e91b6',
@@ -29,6 +38,7 @@ class ServiceCollectTest extends BaseTestCase
     public function testItHandlesABadCollectRequest()
     {
         $response = $this->getService()->collect($this->baseRequest([
+            'payer' => self::PAYER,
             'payment' => [
                 'reference' => 'PENDING',
             ],
@@ -53,6 +63,20 @@ class ServiceCollectTest extends BaseTestCase
                 'token' => [
                     'token' => 'cbdfb8e3304270a8ef107eeb19729f397a1fe1e045bf2e704e4f62c5242e91b6',
                     'installments' => '3',
+                ],
+            ],
+        ]));
+    }
+
+    public function testItRequiresThePayerBeforeCallingTheService()
+    {
+        $this->expectException(PlacetoPayException::class);
+        $this->expectExceptionMessage('The payer is required to collect');
+
+        $this->getService()->collect($this->baseRequest([
+            'instrument' => [
+                'token' => [
+                    'token' => 'cbdfb8e3304270a8ef107eeb19729f397a1fe1e045bf2e704e4f62c5242e91b6',
                 ],
             ],
         ]));

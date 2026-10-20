@@ -58,8 +58,8 @@ class RestCarrierMock
         switch ($path) {
             case '/api/session':
                 return $this->createSession();
-            case '/api/reverse':
-                return $this->reverse();
+            case '/api/transaction':
+                return $this->transaction();
             case '/api/collect':
                 return $this->collect();
             default:
@@ -152,6 +152,16 @@ class RestCarrierMock
         }
 
         return $this->response(200, json_decode($response, true));
+    }
+
+    public function transaction(): FulfilledPromise
+    {
+        $action = $this->parameters()['action'] ?? null;
+
+        return match ($action) {
+            'reverse' => $this->reverse(),
+            default => throw new Exception('No transaction action mocked ' . $action),
+        };
     }
 
     public function reverse(): FulfilledPromise

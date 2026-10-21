@@ -9,7 +9,7 @@ class AmountDetail extends Entity
     protected string $kind;
     protected float $amount;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['kind', 'amount']);
     }

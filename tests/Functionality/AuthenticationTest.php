@@ -3,7 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Tests\Functionality;
 
 use PlacetoPay\PlacetoPaySdk\Carrier\Authentication;
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -57,7 +57,7 @@ class AuthenticationTest extends BaseTestCase
             'login' => 'failed_login',
         ])->request($this->baseRequest());
 
-        $this->assertEquals(Status::ST_FAILED, $response->status()->status());
+        $this->assertSame(StatusType::FAILED, $response->status()->type());
         $this->assertFalse($response->isSuccessful());
     }
 
@@ -69,7 +69,7 @@ class AuthenticationTest extends BaseTestCase
             ],
         ])->request($this->baseRequest());
 
-        $this->assertEquals(Status::ST_FAILED, $response->status()->status());
+        $this->assertSame(StatusType::FAILED, $response->status()->type());
         $this->assertEquals(401, $response->status()->reason());
         $this->assertEquals('Autenticación fallida 200', $response->status()->message());
     }

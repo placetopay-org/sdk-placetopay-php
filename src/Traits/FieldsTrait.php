@@ -19,55 +19,38 @@ trait FieldsTrait
         return $this->fields;
     }
 
-    public function setFields(array $fieldsData)
+    public function setFields(array $fieldsData): static
     {
-        if (isset($fieldsData['item'])) {
-            $fieldsData = $fieldsData['item'];
-        }
-
         $this->fields = [];
-        foreach ($fieldsData as $nvp) {
-            if (is_array($nvp)) {
-                $nvp = new NameValuePair($nvp);
-            }
-
-            if ($nvp instanceof NameValuePair) {
-                $this->fields[] = $nvp;
-            }
+        foreach ($fieldsData['item'] ?? $fieldsData as $nvp) {
+            $this->addField($nvp);
         }
+
         return $this;
     }
 
     public function fieldsToArray(): array
     {
-        if ($this->fields()) {
-            $fields = [];
-            foreach ($this->fields() as $field) {
-                $fields[] = ($field instanceof NameValuePair) ? $field->toArray() : null;
-            }
-            return $fields;
-        }
-        return [];
+        return array_map(fn (NameValuePair $field) => $field->toArray(), $this->fields());
     }
 
-    public function fieldsToKeyValue($nvps = null): array
+    /**
+     * @param NameValuePair[]|null $nvps
+     */
+    public function fieldsToKeyValue(?array $nvps = null): array
     {
-        if (!$nvps) {
-            $nvps = $this->fields();
+        $fields = [];
+        foreach ($nvps ?: $this->fields() as $field) {
+            $fields[$field->keyword()] = $field->value();
         }
 
-        if ($nvps) {
-            $fields = [];
-            foreach ($nvps as $field) {
-                $fields[$field->keyword()] = $field->value();
-            }
-            return $fields;
-        }
-
-        return [];
+        return $fields;
     }
 
-    public function addField($nvp): self
+    /**
+     * @param NameValuePair|array $nvp anything else is ignored
+     */
+    public function addField(mixed $nvp): static
     {
         if (is_array($nvp)) {
             $nvp = new NameValuePair($nvp);

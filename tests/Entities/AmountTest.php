@@ -3,6 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Tests\Entities;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Amount;
+use PlacetoPay\PlacetoPaySdk\Entities\TaxDetail;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class AmountTest extends BaseTestCase
@@ -121,5 +122,15 @@ class AmountTest extends BaseTestCase
             $this->assertSame($detail['kind'], $amount->details()[$i]->kind());
             $this->assertSame((float)$detail['amount'], $amount->details()[$i]->amount());
         }
+    }
+
+    public function testItAcceptsTaxDetailInstances()
+    {
+        $amount = new Amount(['currency' => 'COP', 'total' => 1190]);
+        $amount->setTaxes([new TaxDetail(['kind' => 'valueAddedTax', 'amount' => 190]), ['kind' => 'ice', 'amount' => 10]]);
+
+        $this->assertCount(2, $amount->taxes());
+        $this->assertContainsOnlyInstancesOf(TaxDetail::class, $amount->taxes());
+        $this->assertSame(190.0, $amount->taxes()[0]->amount());
     }
 }

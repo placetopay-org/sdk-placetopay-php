@@ -11,20 +11,20 @@ abstract class Entity
 
     /**
      * Extracts the information for the entity.
-     * @return array
      */
     abstract public function toArray(): array;
 
-    protected function loadEntity($data, string $attribute, string $class): self
+    /**
+     * @param class-string<Entity> $class
+     */
+    protected function loadEntity(mixed $data, string $attribute, string $class): static
     {
         if ($data) {
             if (is_array($data)) {
                 $data = new $class($data);
             }
-            if (!($data instanceof $class)) {
-                $data = null;
-            }
-            $this->{$attribute} = $data;
+
+            $this->{$attribute} = $data instanceof $class ? $data : null;
         }
 
         return $this;

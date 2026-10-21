@@ -16,7 +16,7 @@ class Transaction extends Entity
     /**
      * Reference for PlacetoPay.
      */
-    protected string $internalReference = '';
+    protected ?int $internalReference = null;
     protected string $paymentMethod = '';
     protected string $paymentMethodName = '';
     protected string $issuerName = '';
@@ -31,7 +31,7 @@ class Transaction extends Entity
      */
     protected array $processorFields = [];
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['reference', 'internalReference', 'paymentMethod', 'paymentMethodName', 'issuerName', 'authorization', 'receipt', 'franchise', 'refunded']);
 
@@ -49,7 +49,7 @@ class Transaction extends Entity
         return $this->reference;
     }
 
-    public function internalReference(): string
+    public function internalReference(): ?int
     {
         return $this->internalReference;
     }
@@ -89,6 +89,9 @@ class Transaction extends Entity
         return $this->franchise;
     }
 
+    /**
+     * @return NameValuePair[]
+     */
     public function processorFields(): array
     {
         return $this->processorFields;
@@ -107,27 +110,23 @@ class Transaction extends Entity
     /**
      * Determines if the transaction information its valid, meaning the query was
      * successful not the transaction.
-     * @return bool
      */
     public function isSuccessful(): bool
     {
-        return $this->status() && $this->status()->status() != Status::ST_ERROR;
+        return !$this->status()->isError();
     }
 
     /**
      * Determines if the transaction has been approved.
-     * @return bool
      */
     public function isApproved(): bool
     {
-        return $this->status() && $this->status()->status() == Status::ST_APPROVED;
+        return $this->status()->isApproved();
     }
 
-    public function setProcessorFields($data): self
+    public function setProcessorFields(mixed $data): self
     {
-        if (isset($data['item'])) {
-            $data = $data['item'];
-        }
+        $data = $data['item'] ?? $data;
 
         if (is_array($data)) {
             foreach ($data as $nvp) {
@@ -140,14 +139,7 @@ class Transaction extends Entity
 
     public function processorFieldsToArray(): array
     {
-        if ($this->processorFields()) {
-            $fields = [];
-            foreach ($this->processorFields() as $field) {
-                $fields[] = ($field instanceof NameValuePair) ? $field->toArray() : null;
-            }
-            return $fields;
-        }
-        return [];
+        return array_map(fn (NameValuePair $field) => $field->toArray(), $this->processorFields());
     }
 
     /**
@@ -155,14 +147,12 @@ class Transaction extends Entity
      */
     public function additionalData(): array
     {
-        if ($this->processorFields()) {
-            $data = [];
-            foreach ($this->processorFields() as $field) {
-                $data[$field->keyword()] = $field->value();
-            }
-            return $data;
+        $data = [];
+        foreach ($this->processorFields() as $field) {
+            $data[$field->keyword()] = $field->value();
         }
-        return [];
+
+        return $data;
     }
 
     public function toArray(): array
@@ -173,13 +163,13 @@ class Transaction extends Entity
             'paymentMethod' => $this->paymentMethod(),
             'paymentMethodName' => $this->paymentMethodName(),
             'issuerName' => $this->issuerName(),
-            'amount' => $this->amount() ? $this->amount()->toArray() : null,
+            'amount' => $this->amount()?->toArray(),
             'authorization' => $this->authorization(),
             'reference' => $this->reference(),
             'receipt' => $this->receipt(),
             'franchise' => $this->franchise(),
             'refunded' => $this->refunded(),
-            'discount' => $this->discount() ? $this->discount()->toArray() : null,
+            'discount' => $this->discount()?->toArray(),
             'processorFields' => $this->processorFieldsToArray(),
         ]);
     }

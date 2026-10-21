@@ -41,7 +41,7 @@ class PaymentModifier extends Entity
         return $this;
     }
 
-    public function additional(?string $key = null, $default = null)
+    public function additional(?string $key = null, mixed $default = null): mixed
     {
         if ($key) {
             return $this->additional[$key] ?? $default;

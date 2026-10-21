@@ -29,7 +29,7 @@ class RedirectRequest extends Entity
 
     protected array $metadata = [];
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         // Setting the default values
         if (!isset($data['expiration'])) {
@@ -107,47 +107,43 @@ class RedirectRequest extends Entity
     /**
      * A redirect request itself doesnt have a reference, but it should
      * know how to get it.
-     * @return mixed
      */
     public function reference(): string
     {
-        if ($this->payment()) {
-            return $this->payment()->reference();
-        }
-        return $this->subscription()->reference();
+        return $this->payment()?->reference() ?? $this->subscription()->reference();
     }
 
-    public function setLocale($locale): self
+    public function setLocale(string $locale): self
     {
         $this->locale = $locale;
         return $this;
     }
 
-    public function setReturnUrl($returnUrl): self
+    public function setReturnUrl(string $returnUrl): self
     {
         $this->returnUrl = $returnUrl;
         return $this;
     }
 
-    public function setCancelUrl($cancelUrl): self
+    public function setCancelUrl(string $cancelUrl): self
     {
         $this->cancelUrl = $cancelUrl;
         return $this;
     }
 
-    public function setExpiration($expiration): self
+    public function setExpiration(string $expiration): self
     {
         $this->expiration = $expiration;
         return $this;
     }
 
-    public function setUserAgent($userAgent): self
+    public function setUserAgent(string $userAgent): self
     {
         $this->userAgent = $userAgent;
         return $this;
     }
 
-    public function setIpAddress($ipAddress): self
+    public function setIpAddress(string $ipAddress): self
     {
         $this->ipAddress = $ipAddress;
         return $this;
@@ -190,10 +186,10 @@ class RedirectRequest extends Entity
     {
         return $this->arrayFilter([
             'locale' => $this->locale(),
-            'payer' => $this->payer() ? $this->payer()->toArray() : null,
-            'buyer' => $this->buyer() ? $this->buyer()->toArray() : null,
-            'payment' => $this->payment() ? $this->payment()->toArray() : null,
-            'subscription' => $this->subscription() ? $this->subscription()->toArray() : null,
+            'payer' => $this->payer()?->toArray(),
+            'buyer' => $this->buyer()?->toArray(),
+            'payment' => $this->payment()?->toArray(),
+            'subscription' => $this->subscription()?->toArray(),
             'fields' => $this->fieldsToArray(),
             'returnUrl' => $this->returnUrl(),
             'paymentMethod' => $this->paymentMethod(),

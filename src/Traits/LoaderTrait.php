@@ -4,13 +4,18 @@ namespace PlacetoPay\PlacetoPaySdk\Traits;
 
 trait LoaderTrait
 {
-    public function load($data, $keys): void
+    /**
+     * @param string[] $keys
+     */
+    public function load(mixed $data, array $keys): void
     {
-        if ($data && is_array($data)) {
-            foreach ($keys as $key) {
-                if (isset($data[$key])) {
-                    $this->$key = $data[$key];
-                }
+        if (!is_array($data)) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            if (isset($data[$key])) {
+                $this->$key = $data[$key];
             }
         }
     }

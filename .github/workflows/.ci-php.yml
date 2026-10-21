@@ -7,8 +7,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.4"
-          - "8.0"
           - "8.1"
           - "8.2"
           - "8.3"
@@ -31,7 +29,7 @@ jobs:
         with:
           dependency-versions: ${{ matrix.dependency-versions }}
       - name: Check code style
-        if: matrix.php-version == '8.3' && matrix.dependency-versions == 'highest'
+        if: matrix.php-version == '8.1' && matrix.dependency-versions == 'highest'
         run: composer run-script php-cs-fixer
       - name: Run test suite
         run: composer run-script testdox

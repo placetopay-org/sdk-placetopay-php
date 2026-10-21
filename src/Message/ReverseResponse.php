@@ -18,7 +18,7 @@ class ReverseResponse extends Entity
         return $this->payment;
     }
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->loadEntity($data['status'] ?? null, 'status', Status::class);
         $this->loadEntity($data['payment'] ?? null, 'payment', Transaction::class);
@@ -28,7 +28,7 @@ class ReverseResponse extends Entity
     {
         return $this->arrayFilter([
             'status' => $this->status()->toArray(),
-            'payment' => $this->payment() ? $this->payment()->toArray() : null,
+            'payment' => $this->payment()?->toArray(),
         ]);
     }
 }

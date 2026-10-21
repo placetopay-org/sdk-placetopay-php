@@ -9,6 +9,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
 use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Message\RedirectRequest;
 use Psr\Http\Message\RequestInterface;
 
@@ -50,15 +51,15 @@ class RestCarrierMock
         try {
             $this->handleAuthentication();
         } catch (Exception $e) {
-            return $this->response(401, ['status' => Status::quick(Status::ST_FAILED, '401', $e->getMessage())->toArray()]);
+            return $this->response(401, ['status' => Status::quick(StatusType::FAILED, '401', $e->getMessage())->toArray()]);
         }
 
         $path = $request->getUri()->getPath();
         switch ($path) {
             case '/api/session':
                 return $this->createSession();
-            case '/api/reverse':
-                return $this->reverse();
+            case '/api/transaction':
+                return $this->transaction();
             case '/api/collect':
                 return $this->collect();
             default:
@@ -108,7 +109,7 @@ class RestCarrierMock
         }
 
         return $this->response(200, [
-            'status' => Status::quick(Status::ST_OK, '00', 'La petición se ha creado exitosamente')->toArray(),
+            'status' => Status::quick(StatusType::OK, '00', 'La petición se ha creado exitosamente')->toArray(),
             'requestId' => $requestId,
             'processUrl' => 'https://' . $this->request->getUri()->getHost() . '/session/' . $requestId . '/' . sha1($requestId),
         ]);
@@ -151,6 +152,16 @@ class RestCarrierMock
         }
 
         return $this->response(200, json_decode($response, true));
+    }
+
+    public function transaction(): FulfilledPromise
+    {
+        $action = $this->parameters()['action'] ?? null;
+
+        return match ($action) {
+            'reverse' => $this->reverse(),
+            default => throw new Exception('No transaction action mocked ' . $action),
+        };
     }
 
     public function reverse(): FulfilledPromise

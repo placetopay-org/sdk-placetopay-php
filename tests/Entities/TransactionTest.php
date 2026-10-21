@@ -2,8 +2,8 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Entities;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
 use PlacetoPay\PlacetoPaySdk\Entities\Transaction;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class TransactionTest extends BaseTestCase
@@ -13,11 +13,11 @@ class TransactionTest extends BaseTestCase
         $data = json_decode('{"status": {"status": "APPROVED","reason": "00","message": "Aprobada","date": "2021-09-10T14:30:21-05:00"},"internalReference": 1518816265,"paymentMethod": "visa","paymentMethodName": "Visa","issuerName": "BANCO DE BOGOTA","amount": {"from": {"currency": "COP","total": 40000},"to": {"currency": "COP","total": 40000},"factor": 1},"authorization": "007102","reference": 649999,"receipt": "141344408","franchise": "CR_VS","refunded": false,"processorFields": [{"keyword": "merchantCode","value": "012044569","displayOn": "none"},{"keyword": "terminalNumber","value": "00031000","displayOn": "none"},{"keyword": "bin","value": "459918","displayOn": "none"},{"keyword": "expiration","value": "0323","displayOn": "none"},{"keyword": "installments","value": 1,"displayOn": "none"},{"keyword": "lastDigits","value": "4442","displayOn": "none"}]}', true);
         $transaction = new Transaction($data);
 
-        $this->assertEquals(Status::ST_APPROVED, $transaction->status()->status());
+        $this->assertSame(StatusType::APPROVED, $transaction->status()->type());
         $this->assertTrue($transaction->status()->isApproved());
         $this->assertTrue($transaction->isSuccessful());
         $this->assertTrue($transaction->isApproved());
-        $this->assertEquals('1518816265', $transaction->internalReference());
+        $this->assertSame(1518816265, $transaction->internalReference());
         $this->assertEquals('visa', $transaction->paymentMethod());
         $this->assertEquals('Visa', $transaction->paymentMethodName());
         $this->assertEquals('CR_VS', $transaction->franchise());

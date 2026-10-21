@@ -10,21 +10,17 @@ class Notification extends Entity
 {
     use StatusTrait;
 
-    protected string $requestId;
+    protected int $requestId;
     protected string $reference;
     protected string $signature;
 
-    private string $tranKey;
-
-    public function __construct(array $data, string $tranKey)
+    public function __construct(array $data, private readonly string $tranKey)
     {
         $this->load($data, ['requestId', 'reference', 'signature']);
         $this->loadEntity($data['status'], 'status', Status::class);
-
-        $this->tranKey = $tranKey;
     }
 
-    public function requestId(): string
+    public function requestId(): int
     {
         return $this->requestId;
     }
@@ -46,13 +42,9 @@ class Notification extends Entity
 
     public function isValidNotification(): bool
     {
-        return $this->signature() == $this->makeSignature();
+        return hash_equals($this->makeSignature(), $this->signature());
     }
 
-    /**
-     * Extracts the information for the entity.
-     * @return array
-     */
     public function toArray(): array
     {
         return [

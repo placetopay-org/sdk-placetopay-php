@@ -14,7 +14,7 @@ class Account extends Entity
     protected string $accountType = '';
     protected string $accountNumber = '';
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->load($data, ['bankCode', 'bankName', 'accountType', 'accountNumber']);
         $this->loadEntity($data['status'] ?? null, 'status', Status::class);

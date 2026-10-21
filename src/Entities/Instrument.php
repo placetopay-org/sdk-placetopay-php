@@ -12,7 +12,7 @@ class Instrument extends Entity
     protected string $pin;
     protected string $password;
 
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
         $this->loadEntity($data['bank'] ?? null, 'bank', Account::class);
         $this->loadEntity($data['credit'] ?? null, 'credit', Credit::class);
@@ -50,9 +50,9 @@ class Instrument extends Entity
     public function toArray(): array
     {
         return $this->arrayFilter([
-            'bank' => $this->bank() ? $this->bank()->toArray() : null,
-            'credit' => $this->credit() ? $this->credit()->toArray() : null,
-            'token' => $this->token() ? $this->token()->toArray() : null,
+            'bank' => $this->bank()?->toArray(),
+            'credit' => $this->credit()?->toArray(),
+            'token' => $this->token()?->toArray(),
             'pin' => $this->pin(),
             'password' => $this->password(),
         ]);

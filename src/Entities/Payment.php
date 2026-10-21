@@ -83,6 +83,9 @@ class Payment extends Entity
         return $this->shipping;
     }
 
+    /**
+     * @return Item[]
+     */
     public function items(): array
     {
         return $this->items;
@@ -103,13 +106,13 @@ class Payment extends Entity
         return $this->discount;
     }
 
-    public function setReference($reference): self
+    public function setReference(string $reference): self
     {
         $this->reference = $reference;
         return $this;
     }
 
-    public function setDescription($description): self
+    public function setDescription(string $description): self
     {
         $this->description = $description;
         return $this;
@@ -117,25 +120,17 @@ class Payment extends Entity
 
     public function setItems(array $items): self
     {
-        if (isset($items['item'])) {
-            $items = $items['item'];
-        }
-        $this->items = array_map(function ($data) {
-            return is_array($data) ? new Item($data) : $data;
-        }, $items);
+        $this->items = array_map(
+            fn (Item|array $data) => is_array($data) ? new Item($data) : $data,
+            $items['item'] ?? $items
+        );
 
         return $this;
     }
 
     public function itemsToArray(): array
     {
-        if ($this->items() && is_array($this->items())) {
-            return array_map(function (Item $item) {
-                return $item->toArray();
-            }, $this->items());
-        }
-
-        return [];
+        return array_map(fn (Item $item) => $item->toArray(), $this->items());
     }
 
     /**
@@ -157,7 +152,10 @@ class Payment extends Entity
         return $this;
     }
 
-    public function addModifier($modifier): self
+    /**
+     * @param PaymentModifier|array $modifier anything else is ignored
+     */
+    public function addModifier(mixed $modifier): self
     {
         if (is_array($modifier)) {
             $modifier = new PaymentModifier($modifier);
@@ -172,12 +170,7 @@ class Payment extends Entity
 
     public function modifiersToArray(): array
     {
-        $modifiers = [];
-        foreach ($this->modifiers as $modifier) {
-            $modifiers[] = $modifier->toArray();
-        }
-
-        return $modifiers;
+        return array_map(fn (PaymentModifier $modifier) => $modifier->toArray(), $this->modifiers);
     }
 
     public function modifier(string $type, ?string $code = null): ?PaymentModifier
@@ -198,11 +191,11 @@ class Payment extends Entity
             'agreementType' => $this->agreementType(),
             'reference' => $this->reference(),
             'description' => $this->description(),
-            'amount' => $this->amount() ? $this->amount()->toArray() : null,
-            'shipping' => $this->shipping() ? $this->shipping()->toArray() : null,
+            'amount' => $this->amount()?->toArray(),
+            'shipping' => $this->shipping()?->toArray(),
             'items' => $this->itemsToArray(),
-            'recurring' => $this->recurring() ? $this->recurring()->toArray() : null,
-            'discount' => $this->discount() ? $this->discount()->toArray() : null,
+            'recurring' => $this->recurring()?->toArray(),
+            'discount' => $this->discount()?->toArray(),
             'fields' => $this->fieldsToArray(),
             'subscribe' => $this->subscribe() ?: null,
             'allowPartial' => $this->allowPartial ?: null,

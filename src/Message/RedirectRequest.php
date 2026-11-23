@@ -4,6 +4,7 @@ namespace PlacetoPay\PlacetoPaySdk\Message;
 
 use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 use PlacetoPay\PlacetoPaySdk\Entities\DispersionPayment;
+use PlacetoPay\PlacetoPaySdk\Entities\NameValuePair;
 use PlacetoPay\PlacetoPaySdk\Entities\Person;
 use PlacetoPay\PlacetoPaySdk\Entities\Subscription;
 use PlacetoPay\PlacetoPaySdk\Traits\FieldsTrait;
@@ -12,46 +13,62 @@ class RedirectRequest extends Entity
 {
     use FieldsTrait;
 
-    protected string $locale = 'es_CO';
-    protected ?Person $payer = null;
-    protected ?Person $buyer = null;
-    protected ?DispersionPayment $payment = null;
-    protected ?Subscription $subscription = null;
-    protected string $returnUrl;
-    protected string $paymentMethod = '';
-    protected string $cancelUrl = '';
-    protected string $ipAddress;
-    protected string $userAgent;
     protected string $expiration;
-    protected bool $captureAddress = false;
-    protected bool $skipResult = false;
-    protected bool $noBuyerFill = false;
 
-    protected array $metadata = [];
+    /**
+     * @param string|null $expiration defaults to one day from now
+     * @param array<NameValuePair|array> $fields
+     */
+    public function __construct(
+        protected string $returnUrl = '',
+        protected string $ipAddress = '',
+        protected string $userAgent = '',
+        protected ?Person $payer = null,
+        protected ?Person $buyer = null,
+        protected ?DispersionPayment $payment = null,
+        protected ?Subscription $subscription = null,
+        protected string $locale = 'es_CO',
+        protected string $paymentMethod = '',
+        protected string $cancelUrl = '',
+        ?string $expiration = null,
+        protected bool $captureAddress = false,
+        protected bool $skipResult = false,
+        protected bool $noBuyerFill = false,
+        array $fields = [],
+        protected array $metadata = [],
+    ) {
+        $this->expiration = $expiration ?? date('c', strtotime('+1 day'));
+        $this->setFields($fields);
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        // Setting the default values
-        if (!isset($data['expiration'])) {
-            $this->expiration = date('c', strtotime('+1 day'));
-        }
+        return new self(...self::attributesFromArray($data));
+    }
 
-        $this->load($data, ['returnUrl', 'paymentMethod', 'cancelUrl', 'ipAddress', 'userAgent', 'expiration', 'captureAddress', 'skipResult', 'noBuyerFill']);
-
-        if (isset($data['locale'])) {
-            $this->setLocale($data['locale']);
-        }
-
-        $this->loadEntity($data['payer'] ?? null, 'payer', Person::class);
-        $this->loadEntity($data['buyer'] ?? null, 'buyer', Person::class);
-        $this->loadEntity($data['payment'] ?? null, 'payment', DispersionPayment::class);
-        $this->loadEntity($data['subscription'] ?? null, 'subscription', Subscription::class);
-
-        if (isset($data['fields'])) {
-            $this->setFields($data['fields']);
-        }
-
-        $this->metadata = $data['metadata'] ?? [];
+    /**
+     * Maps the service representation of a request to the constructor arguments.
+     */
+    protected static function attributesFromArray(array $data): array
+    {
+        return [
+            'returnUrl' => $data['returnUrl'] ?? '',
+            'ipAddress' => $data['ipAddress'] ?? '',
+            'userAgent' => $data['userAgent'] ?? '',
+            'payer' => self::parseEntity($data['payer'] ?? null, Person::class),
+            'buyer' => self::parseEntity($data['buyer'] ?? null, Person::class),
+            'payment' => self::parseEntity($data['payment'] ?? null, DispersionPayment::class),
+            'subscription' => self::parseEntity($data['subscription'] ?? null, Subscription::class),
+            'locale' => $data['locale'] ?? 'es_CO',
+            'paymentMethod' => $data['paymentMethod'] ?? '',
+            'cancelUrl' => $data['cancelUrl'] ?? '',
+            'expiration' => $data['expiration'] ?? null,
+            'captureAddress' => $data['captureAddress'] ?? false,
+            'skipResult' => $data['skipResult'] ?? false,
+            'noBuyerFill' => $data['noBuyerFill'] ?? false,
+            'fields' => $data['fields'] ?? [],
+            'metadata' => $data['metadata'] ?? [],
+        ];
     }
 
     public function locale(): string
@@ -107,47 +124,43 @@ class RedirectRequest extends Entity
     /**
      * A redirect request itself doesnt have a reference, but it should
      * know how to get it.
-     * @return mixed
      */
     public function reference(): string
     {
-        if ($this->payment()) {
-            return $this->payment()->reference();
-        }
-        return $this->subscription()->reference();
+        return $this->payment()?->reference() ?? $this->subscription()->reference();
     }
 
-    public function setLocale($locale): self
+    public function setLocale(string $locale): self
     {
         $this->locale = $locale;
         return $this;
     }
 
-    public function setReturnUrl($returnUrl): self
+    public function setReturnUrl(string $returnUrl): self
     {
         $this->returnUrl = $returnUrl;
         return $this;
     }
 
-    public function setCancelUrl($cancelUrl): self
+    public function setCancelUrl(string $cancelUrl): self
     {
         $this->cancelUrl = $cancelUrl;
         return $this;
     }
 
-    public function setExpiration($expiration): self
+    public function setExpiration(string $expiration): self
     {
         $this->expiration = $expiration;
         return $this;
     }
 
-    public function setUserAgent($userAgent): self
+    public function setUserAgent(string $userAgent): self
     {
         $this->userAgent = $userAgent;
         return $this;
     }
 
-    public function setIpAddress($ipAddress): self
+    public function setIpAddress(string $ipAddress): self
     {
         $this->ipAddress = $ipAddress;
         return $this;
@@ -190,10 +203,10 @@ class RedirectRequest extends Entity
     {
         return $this->arrayFilter([
             'locale' => $this->locale(),
-            'payer' => $this->payer() ? $this->payer()->toArray() : null,
-            'buyer' => $this->buyer() ? $this->buyer()->toArray() : null,
-            'payment' => $this->payment() ? $this->payment()->toArray() : null,
-            'subscription' => $this->subscription() ? $this->subscription()->toArray() : null,
+            'payer' => $this->payer()?->toArray(),
+            'buyer' => $this->buyer()?->toArray(),
+            'payment' => $this->payment()?->toArray(),
+            'subscription' => $this->subscription()?->toArray(),
             'fields' => $this->fieldsToArray(),
             'returnUrl' => $this->returnUrl(),
             'paymentMethod' => $this->paymentMethod(),

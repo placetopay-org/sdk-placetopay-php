@@ -11,24 +11,24 @@ use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 
 class Settings extends Entity
 {
-    protected string $baseUrl = '';
+    protected readonly string $baseUrl;
+    protected readonly int $timeout;
+    protected readonly bool $verifySsl;
+    protected readonly string $login;
+    protected readonly string $tranKey;
+    protected readonly array $headers;
+    protected readonly array $authAdditional;
+    protected readonly Logger $logger;
 
-    protected int $timeout = 15;
-    protected bool $verifySsl = true;
-
-    protected string $login;
-    protected string $tranKey;
-    protected array $headers = [];
-    protected array $authAdditional = [];
-
-    protected ?Logger $logger = null;
-    protected ?Client $client = null;
-
+    protected ?Client $client;
     protected ?Carrier $carrier = null;
 
+    /**
+     * @throws PlacetoPayException
+     */
     public function __construct(array $data)
     {
-        if (!isset($data['login']) || !isset($data['tranKey'])) {
+        if (!isset($data['login'], $data['tranKey'])) {
             throw PlacetoPayException::forDataNotProvided('No login or tranKey provided on gateway');
         }
 
@@ -36,22 +36,14 @@ class Settings extends Entity
             throw PlacetoPayException::forDataNotProvided('No service URL provided to use');
         }
 
-        if (substr($data['baseUrl'], -1) != '/') {
-            $data['baseUrl'] .= '/';
-        }
-
-        $allowedKeys = [
-            'baseUrl',
-            'timeout',
-            'verifySsl',
-            'login',
-            'tranKey',
-            'headers',
-            'client',
-            'authAdditional',
-        ];
-
-        $this->load($data, $allowedKeys);
+        $this->baseUrl = str_ends_with($data['baseUrl'], '/') ? $data['baseUrl'] : $data['baseUrl'] . '/';
+        $this->timeout = $data['timeout'] ?? 15;
+        $this->verifySsl = $data['verifySsl'] ?? true;
+        $this->login = $data['login'];
+        $this->tranKey = $data['tranKey'];
+        $this->headers = $data['headers'] ?? [];
+        $this->authAdditional = $data['authAdditional'] ?? [];
+        $this->client = $data['client'] ?? null;
         $this->logger = new Logger($data['logger'] ?? null);
     }
 
@@ -87,14 +79,11 @@ class Settings extends Entity
 
     public function client(): Client
     {
-        if (!$this->client) {
-            $this->client = new Client([
-                'timeout' => $this->timeout(),
-                'connect_timeout' => $this->timeout(),
-                'verify' => $this->verifySsl(),
-            ]);
-        }
-        return $this->client;
+        return $this->client ??= new Client([
+            'timeout' => $this->timeout(),
+            'connect_timeout' => $this->timeout(),
+            'verify' => $this->verifySsl(),
+        ]);
     }
 
     public function logger(): Logger
@@ -109,13 +98,7 @@ class Settings extends Entity
 
     public function carrier(): Carrier
     {
-        if ($this->carrier instanceof Carrier) {
-            return $this->carrier;
-        }
-
-        $this->carrier = new RestCarrier($this);
-
-        return $this->carrier;
+        return $this->carrier ??= new RestCarrier($this);
     }
 
     public function authentication(): Authentication

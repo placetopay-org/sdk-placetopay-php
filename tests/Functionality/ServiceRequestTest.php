@@ -3,7 +3,7 @@
 namespace PlacetoPay\PlacetoPaySdk\Tests\Functionality;
 
 use PlacetoPay\PlacetoPaySdk\Entities\PaymentModifier;
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayServiceException;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
@@ -32,10 +32,10 @@ class ServiceRequestTest extends BaseTestCase
     {
         $response = $this->getService()->request($this->baseRequest());
 
-        $this->assertEquals(Status::ST_OK, $response->status()->status());
+        $this->assertSame(StatusType::OK, $response->status()->type());
         $this->assertTrue($response->status()->isSuccessful());
         $this->assertEquals('120000', $response->toArray()['requestId']);
-        $this->assertEquals('120000', $response->requestId());
+        $this->assertSame(120000, $response->requestId());
         $this->assertNotEmpty($response->processUrl());
     }
 

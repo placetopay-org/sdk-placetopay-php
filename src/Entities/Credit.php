@@ -6,18 +6,22 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Credit extends Entity
 {
-    protected string $code;
-    protected string $type;
-    protected string $groupCode;
-    /**
-     * When first created from the service.
-     * @var int
-     */
-    protected int $installment;
+    public function __construct(
+        protected string $code = '',
+        protected string $type = '',
+        protected string $groupCode = '',
+        protected int $installment = 0,
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['code', 'type', 'groupCode', 'installment']);
+        return new self(
+            code: $data['code'] ?? '',
+            type: $data['type'] ?? '',
+            groupCode: $data['groupCode'] ?? '',
+            installment: $data['installment'] ?? 0,
+        );
     }
 
     public function code(): string

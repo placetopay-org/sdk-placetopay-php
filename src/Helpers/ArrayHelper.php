@@ -7,7 +7,7 @@ class ArrayHelper
     /**
      * Transforms the object passed as array.
      */
-    public static function asArray($data): array
+    public static function asArray(mixed $data): array
     {
         return json_decode(json_encode($data), true);
     }
@@ -21,12 +21,10 @@ class ArrayHelper
     }
 
     /**
-     * Filters an array looking for null values and remove it corresponding key.
+     * Filters an array looking for empty values and removes its corresponding key, keeping false, 0 and '0'.
      */
     public static function filter(array $array): array
     {
-        return array_filter($array, function ($item) {
-            return !empty($item) || $item === false || $item === 0 || $item == '0';
-        });
+        return array_filter($array, fn (mixed $item) => !empty($item) || $item === false || $item === 0 || $item == '0');
     }
 }

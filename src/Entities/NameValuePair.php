@@ -6,13 +6,20 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class NameValuePair extends Entity
 {
-    protected string $keyword;
-    protected $value;
-    protected string $displayOn = 'none';
+    public function __construct(
+        protected string $keyword = '',
+        protected mixed $value = null,
+        protected string $displayOn = 'none',
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['keyword', 'value', 'displayOn']);
+        return new self(
+            keyword: $data['keyword'] ?? '',
+            value: $data['value'] ?? null,
+            displayOn: $data['displayOn'] ?? 'none',
+        );
     }
 
     public function keyword(): string
@@ -20,10 +27,7 @@ class NameValuePair extends Entity
         return $this->keyword;
     }
 
-    /**
-     * @return string|array
-     */
-    public function value()
+    public function value(): mixed
     {
         return $this->value;
     }

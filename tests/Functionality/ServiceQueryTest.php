@@ -5,7 +5,7 @@ namespace PlacetoPay\PlacetoPaySdk\Tests\Functionality;
 use PlacetoPay\PlacetoPaySdk\Entities\Account;
 use PlacetoPay\PlacetoPaySdk\Entities\Discount;
 use PlacetoPay\PlacetoPaySdk\Entities\PaymentModifier;
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class ServiceQueryTest extends BaseTestCase
@@ -23,8 +23,8 @@ class ServiceQueryTest extends BaseTestCase
     {
         $response = $this->getService()->query(99999);
 
-        $this->assertEmpty($response->requestId());
-        $this->assertEquals(Status::ST_FAILED, $response->status()->status());
+        $this->assertNull($response->requestId());
+        $this->assertSame(StatusType::FAILED, $response->status()->type());
         $this->assertNull($response->request());
     }
 

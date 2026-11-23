@@ -31,77 +31,84 @@ class Amount extends AmountBase
     protected float $airline;
     protected float $interest;
 
-    public function __construct($data = [])
-    {
-        parent::__construct($data);
-        if (isset($data['taxes'])) {
-            $this->setTaxes($data['taxes']);
-        }
-        if (isset($data['details'])) {
-            $this->setDetails($data['details']);
-        }
+    /**
+     * @param array<TaxDetail|array> $taxes
+     * @param array<AmountDetail|array> $details
+     */
+    public function __construct(
+        string $currency = 'COP',
+        float $total = 0,
+        array $taxes = [],
+        array $details = [],
+    ) {
+        parent::__construct($currency, $total);
+
+        $this->setTaxes($taxes);
+        $this->setDetails($details);
     }
 
-    public function taxes()
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            currency: $data['currency'] ?? 'COP',
+            total: $data['total'] ?? 0,
+            taxes: $data['taxes'] ?? [],
+            details: $data['details'] ?? [],
+        );
+    }
+
+    /**
+     * @return TaxDetail[]
+     */
+    public function taxes(): array
     {
         return $this->taxes;
     }
 
-    public function details()
+    /**
+     * @return AmountDetail[]
+     */
+    public function details(): array
     {
         return $this->details;
     }
 
-    public function setTaxes(array $taxes)
+    /**
+     * @param array<TaxDetail|array> $taxes
+     */
+    public function setTaxes(array $taxes): static
     {
-        $return = [];
-        foreach ($taxes as $tax) {
-            if (is_array($tax)) {
-                $tax = new TaxDetail($tax);
-                $return[] = $tax;
-            }
-        }
-        $this->taxes = $return;
+        $this->taxes = array_map(fn (TaxDetail|array $tax) => is_array($tax) ? TaxDetail::fromArray($tax) : $tax, $taxes);
+
         return $this;
     }
 
-    public function setDetails($details)
+    /**
+     * @param array<AmountDetail|array> $details
+     */
+    public function setDetails(array $details): static
     {
-        $return = [];
+        $this->details = [];
         foreach ($details as $detail) {
             if (is_array($detail)) {
-                $detail = new AmountDetail($detail);
+                $detail = AmountDetail::fromArray($detail);
             }
 
             $this->{$detail->kind()} = $detail->amount();
-            $return[] = $detail;
+            $this->details[] = $detail;
         }
-        $this->details = $return;
+
         return $this;
     }
 
-    private function taxesToArray()
+    private function taxesToArray(): ?array
     {
-        if ($this->taxes()) {
-            $taxes = [];
-            foreach ($this->taxes() as $tax) {
-                $taxes[] = ($tax instanceof TaxDetail) ? $tax->toArray() : null;
-            }
-            return $taxes;
-        }
-        return null;
+        return array_map(fn (TaxDetail $tax) => $tax->toArray(), $this->taxes()) ?: null;
     }
 
-    private function detailsToArray()
+    private function detailsToArray(): ?array
     {
-        if ($this->details()) {
-            $details = [];
-            foreach ($this->details() as $detail) {
-                $details[] = $detail->toArray();
-            }
-            return $details;
-        }
-        return null;
+        return array_map(fn (AmountDetail $detail) => $detail->toArray(), $this->details()) ?: null;
     }
 
     public function toArray(): array

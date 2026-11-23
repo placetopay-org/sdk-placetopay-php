@@ -2,7 +2,7 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Functionality;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class ServiceReverseTest extends BaseTestCase
@@ -51,9 +51,9 @@ class ServiceReverseTest extends BaseTestCase
 
     public function testItHandlesAnErrorOnReverseCall()
     {
-        $response = $this->getService()->reverse('');
+        $response = $this->getService()->reverse(0);
         $this->assertFalse($response->isSuccessful());
-        $this->assertEquals(Status::ST_FAILED, $response->status()->status());
+        $this->assertSame(StatusType::FAILED, $response->status()->type());
         $this->assertEmpty($response->payment());
     }
 }

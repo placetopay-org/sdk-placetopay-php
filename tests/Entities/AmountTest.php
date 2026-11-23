@@ -3,13 +3,14 @@
 namespace PlacetoPay\PlacetoPaySdk\Tests\Entities;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Amount;
+use PlacetoPay\PlacetoPaySdk\Entities\TaxDetail;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
 class AmountTest extends BaseTestCase
 {
     public function testItWorksWithTaxes()
     {
-        $amount = new Amount([
+        $amount = Amount::fromArray([
             'taxes' => $taxes = [
                 [
                     'kind' => 'valueAddedTax',
@@ -61,7 +62,7 @@ class AmountTest extends BaseTestCase
 
     public function testItWorksWithDetails()
     {
-        $amount = new Amount([
+        $amount = Amount::fromArray([
             'details' => $details = [
                 [
                     'kind' => 'discount',
@@ -121,5 +122,15 @@ class AmountTest extends BaseTestCase
             $this->assertSame($detail['kind'], $amount->details()[$i]->kind());
             $this->assertSame((float)$detail['amount'], $amount->details()[$i]->amount());
         }
+    }
+
+    public function testItAcceptsTaxDetailInstances()
+    {
+        $amount = Amount::fromArray(['currency' => 'COP', 'total' => 1190]);
+        $amount->setTaxes([TaxDetail::fromArray(['kind' => 'valueAddedTax', 'amount' => 190]), ['kind' => 'ice', 'amount' => 10]]);
+
+        $this->assertCount(2, $amount->taxes());
+        $this->assertContainsOnlyInstancesOf(TaxDetail::class, $amount->taxes());
+        $this->assertSame(190.0, $amount->taxes()[0]->amount());
     }
 }

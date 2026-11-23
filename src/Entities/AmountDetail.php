@@ -6,12 +6,18 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class AmountDetail extends Entity
 {
-    protected string $kind;
-    protected float $amount;
+    public function __construct(
+        protected string $kind = '',
+        protected float $amount = 0,
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['kind', 'amount']);
+        return new self(
+            kind: $data['kind'] ?? '',
+            amount: $data['amount'] ?? 0,
+        );
     }
 
     public function kind(): string

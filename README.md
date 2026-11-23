@@ -4,13 +4,13 @@ With this code you will be able to quickly connect with the PlacetoPay Checkout 
 
 In order to see more comprehensive examples of how it works, please refer to the examples and the [documentation](https://docs-gateway.placetopay.com/)
 
-### Migration from version 1
+## Migration guide
 
-- [ ] Change the settings parameter `url` for `baseUrl`
-- [ ] If you have set the `timeout` for rest then change it to the root of the settings
-- [ ] `PlacetoPayServiceException` is thrown instead of returning an ERROR status response
+See [Upgrading to the PHP 8.1 version](#upgrading-to-the-php-81-version) at the end of this document for the breaking changes introduced by this version.
 
 ## Installation
+
+Requires PHP 8.1 or higher.
 
 Using composer from your project
 
@@ -81,3 +81,59 @@ if ($response->isSuccessful()) {
     print_r($response->status()->message() . "\n");
 }
 ```
+
+## Upgrading to the PHP 8.1 version
+
+This version requires **PHP 8.1 or higher** and introduces the following breaking changes. Integrations that only use
+the `PlacetoPay` class with arrays (`request`, `query`, `collect`, `reverse`, `readNotification`) need to review mostly
+the items marked with :warning:.
+
+### Settings
+
+- [ ] Change the settings parameter `url` for `baseUrl`
+- [ ] If you have set the `timeout` for rest then change it to the root of the settings
+- [ ] :warning: `PlacetoPayServiceException` is thrown instead of returning an `ERROR` status response, wrap the calls in a `try/catch`
+
+### Entities are built with PHP 8 constructors
+
+Entities and messages no longer receive an array in the constructor. They use constructor property promotion with
+named arguments, and each one exposes a `fromArray()` factory that maps the service representation.
+
+```php
+// Before
+$person = new Person(['name' => 'John', 'document' => '1040035000', 'documentType' => 'CC']);
+$request = new RedirectRequest($data);
+
+// After
+$person = Person::fromArray(['name' => 'John', 'document' => '1040035000', 'documentType' => 'CC']);
+$person = new Person(name: 'John', document: '1040035000', documentType: 'CC');
+$request = RedirectRequest::fromArray($data);
+```
+
+- [ ] Replace every `new Entity($array)` with `Entity::fromArray($array)` or with named arguments
+- [ ] `Notification` is created with `Notification::fromArray($data, $tranKey)` (or `$placetopay->readNotification($data)`)
+- [ ] `CollectRequest` receives `instrument` and `provider`, any other named argument is forwarded to `RedirectRequest`
+- [ ] The `LoaderTrait` and the `Entity::load()` / `Entity::loadEntity()` methods were removed, if you extended an entity map the attributes in your own `fromArray()`
+
+### Statuses and document types are enums
+
+- [ ] Replace the `Status::ST_*` constants with the `StatusType` enum, e.g. `Status::ST_APPROVED` → `StatusType::APPROVED->value`
+- [ ] Use `$status->type()` to obtain the `StatusType` of a status, unknown values resolve to `StatusType::UNKNOWN` through `StatusType::fromName()`
+- [ ] `Status::quick()` accepts a `StatusType` or a string
+- [ ] Replace the `DocumentHelper::TYPE_*` constants with the `DocumentType` enum, e.g. `DocumentHelper::TYPE_CC` → `DocumentType::CC->value`. The validation patterns are available through `DocumentType::pattern()`, `isValid()` and `isBusiness()`
+
+### Identifiers are integers
+
+- [ ] `PlacetoPay::query()` receives an `int` request id
+- [ ] `PlacetoPay::reverse()` receives the `int` internal reference of the transaction, it now uses the `api/transaction` endpoint
+- [ ] `RedirectResponse::requestId()` and `RedirectInformation::requestId()` return `?int`, `Notification::requestId()` returns `int`
+- [ ] `Transaction::internalReference()` returns `?int`
+
+### Stricter signatures
+
+- [ ] Setters and helpers are typed (`setReference(string)`, `setLocale(string)`, `setFactor(float)`, ...), passing a wrong type raises a `TypeError`
+- [ ] Fluent setters return `static`
+- [ ] Optional nested entities return nullable values, e.g. `Transaction::amount(): ?AmountConversion`, `AmountConversion::from(): ?AmountBase`
+- [ ] `CollectRequest::payer()` is inherited from `RedirectRequest` and returns `?Person`, the payer is still validated when the request is created
+- [ ] Attributes not provided take a default value (empty string, `0`, `false` or `null`) instead of being left uninitialized
+

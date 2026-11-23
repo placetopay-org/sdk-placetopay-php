@@ -48,7 +48,7 @@ class CollectRequestTest extends BaseTestCase
                 'initiatorIndicator' =>  'AGENT',
             ],
         ];
-        $request = new CollectRequest($data);
+        $request = CollectRequest::fromArray($data);
 
         $this->assertEquals($data['instrument']['credit']['code'], $request->instrument()->credit()->code());
         $this->assertEquals($data['instrument']['credit']['type'], $request->instrument()->credit()->type());

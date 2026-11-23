@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayServiceException;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -18,9 +19,7 @@ class ServiceInvalidResponseTest extends BaseTestCase
         ]);
     }
 
-    /**
-     * @dataProvider invalidResponses
-     */
+    #[DataProvider('invalidResponses')]
     public function testItThrowsAServiceExceptionOnANonJsonResponse(Response $response, string $expectedInMessage)
     {
         $this->expectException(PlacetoPayServiceException::class);

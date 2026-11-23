@@ -16,76 +16,50 @@ class Authentication
     public const WSU = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd';
     public const WSSE = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
 
-    private string $login;
-    private string $tranKey;
+    private readonly string $login;
+    private readonly string $tranKey;
+    private readonly array $additional;
+    private readonly bool $overridden;
+    private readonly string $algorithm;
 
     private array $auth = [];
-    private array $additional = [];
-    private bool $overridden = false;
-    private string $algorithm = 'sha1';
 
     /**
      * @throws PlacetoPayException
      */
     public function __construct(array $config)
     {
-        if (!isset($config['login']) || !isset($config['tranKey'])) {
+        if (!isset($config['login'], $config['tranKey'])) {
             throw PlacetoPayException::forDataNotProvided('No login or tranKey provided on authentication');
         }
 
         $this->login = $config['login'];
         $this->tranKey = $config['tranKey'];
-
-        if (isset($config['auth'])) {
-            $this->auth = $config['auth'];
-            $this->overridden = true;
-        }
-
+        $this->overridden = isset($config['auth']);
+        $this->auth = $config['auth'] ?? [];
         $this->algorithm = $config['algorithm'] ?? 'sha1';
         $this->additional = $config['authAdditional'] ?? [];
 
         $this->generate();
     }
 
-    public function getNonce($encoded = true)
+    public function getNonce(bool $encoded = true): string
     {
-        if ($this->auth) {
-            $nonce = $this->auth['nonce'];
-        } else {
-            if (function_exists('openssl_random_pseudo_bytes')) {
-                $nonce = bin2hex(openssl_random_pseudo_bytes(16));
-            } elseif (function_exists('random_bytes')) {
-                $nonce = bin2hex(random_bytes(16));
-            } else {
-                $nonce = mt_rand();
-            }
-        }
+        $nonce = $this->auth ? $this->auth['nonce'] : bin2hex(random_bytes(16));
 
-        if ($encoded) {
-            return base64_encode($nonce);
-        }
-
-        return $nonce;
+        return $encoded ? base64_encode($nonce) : $nonce;
     }
 
     public function getSeed(): string
     {
-        if ($this->auth) {
-            return $this->auth['seed'];
-        }
-
-        return date('c');
+        return $this->auth ? $this->auth['seed'] : date('c');
     }
 
-    public function digest($encoded = true): string
+    public function digest(bool $encoded = true): string
     {
         $digest = hash($this->algorithm, $this->getNonce(false) . $this->getSeed() . $this->tranKey(), true);
 
-        if ($encoded) {
-            return base64_encode($digest);
-        }
-
-        return $digest;
+        return $encoded ? base64_encode($digest) : $digest;
     }
 
     public function login(): string
@@ -103,7 +77,7 @@ class Authentication
         return $this->additional;
     }
 
-    public function generate(): self
+    public function generate(): static
     {
         if (!$this->overridden) {
             $this->auth = [
@@ -116,8 +90,7 @@ class Authentication
     }
 
     /**
-     * Parses the entity as a SOAP Header.
-     * @return SoapHeader
+     * Parses the entity as a SOAP Header, requires ext-soap.
      */
     public function asSoapHeader(): SoapHeader
     {

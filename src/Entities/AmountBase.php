@@ -6,12 +6,18 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class AmountBase extends Entity
 {
-    protected string $currency = 'COP';
-    protected float $total;
+    public function __construct(
+        protected string $currency = 'COP',
+        protected float $total = 0,
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['currency', 'total']);
+        return new self(
+            currency: $data['currency'] ?? 'COP',
+            total: $data['total'] ?? 0,
+        );
     }
 
     public function currency(): string

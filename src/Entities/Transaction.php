@@ -10,38 +10,51 @@ class Transaction extends Entity
     use StatusTrait;
 
     /**
-     * Reference as the commerce provides.
-     */
-    protected string $reference;
-    /**
-     * Reference for PlacetoPay.
-     */
-    protected string $internalReference = '';
-    protected string $paymentMethod = '';
-    protected string $paymentMethodName = '';
-    protected string $issuerName = '';
-    protected ?Discount $discount = null;
-    protected AmountConversion $amount;
-    protected string $authorization = '';
-    protected string $receipt = '';
-    protected string $franchise = '';
-    protected bool $refunded = false;
-    /**
      * @var NameValuePair[]
      */
     protected array $processorFields = [];
 
-    public function __construct($data = [])
+    /**
+     * @param string $reference Reference as the commerce provides.
+     * @param int|null $internalReference Reference for PlacetoPay.
+     * @param array<NameValuePair|array> $processorFields
+     */
+    public function __construct(
+        Status $status,
+        protected string $reference = '',
+        protected ?int $internalReference = null,
+        protected string $paymentMethod = '',
+        protected string $paymentMethodName = '',
+        protected string $issuerName = '',
+        protected ?Discount $discount = null,
+        protected ?AmountConversion $amount = null,
+        protected string $authorization = '',
+        protected string $receipt = '',
+        protected string $franchise = '',
+        protected bool $refunded = false,
+        array $processorFields = [],
+    ) {
+        $this->status = $status;
+        $this->setProcessorFields($processorFields);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['reference', 'internalReference', 'paymentMethod', 'paymentMethodName', 'issuerName', 'authorization', 'receipt', 'franchise', 'refunded']);
-
-        $this->loadEntity($data['status'], 'status', Status::class);
-        $this->loadEntity($data['amount'] ?? null, 'amount', AmountConversion::class);
-        $this->loadEntity($data['discount'] ?? null, 'discount', Discount::class);
-
-        if (isset($data['processorFields'])) {
-            $this->setProcessorFields($data['processorFields']);
-        }
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            reference: $data['reference'] ?? '',
+            internalReference: $data['internalReference'] ?? null,
+            paymentMethod: $data['paymentMethod'] ?? '',
+            paymentMethodName: $data['paymentMethodName'] ?? '',
+            issuerName: $data['issuerName'] ?? '',
+            discount: self::parseEntity($data['discount'] ?? null, Discount::class),
+            amount: self::parseEntity($data['amount'] ?? null, AmountConversion::class),
+            authorization: $data['authorization'] ?? '',
+            receipt: $data['receipt'] ?? '',
+            franchise: $data['franchise'] ?? '',
+            refunded: $data['refunded'] ?? false,
+            processorFields: $data['processorFields'] ?? [],
+        );
     }
 
     public function reference(): string
@@ -49,7 +62,7 @@ class Transaction extends Entity
         return $this->reference;
     }
 
-    public function internalReference(): string
+    public function internalReference(): ?int
     {
         return $this->internalReference;
     }
@@ -69,7 +82,7 @@ class Transaction extends Entity
         return $this->issuerName;
     }
 
-    public function amount(): AmountConversion
+    public function amount(): ?AmountConversion
     {
         return $this->amount;
     }
@@ -89,6 +102,9 @@ class Transaction extends Entity
         return $this->franchise;
     }
 
+    /**
+     * @return NameValuePair[]
+     */
     public function processorFields(): array
     {
         return $this->processorFields;
@@ -107,31 +123,27 @@ class Transaction extends Entity
     /**
      * Determines if the transaction information its valid, meaning the query was
      * successful not the transaction.
-     * @return bool
      */
     public function isSuccessful(): bool
     {
-        return $this->status() && $this->status()->status() != Status::ST_ERROR;
+        return !$this->status()->isError();
     }
 
     /**
      * Determines if the transaction has been approved.
-     * @return bool
      */
     public function isApproved(): bool
     {
-        return $this->status() && $this->status()->status() == Status::ST_APPROVED;
+        return $this->status()->isApproved();
     }
 
-    public function setProcessorFields($data): self
+    public function setProcessorFields(mixed $data): self
     {
-        if (isset($data['item'])) {
-            $data = $data['item'];
-        }
+        $data = $data['item'] ?? $data;
 
         if (is_array($data)) {
             foreach ($data as $nvp) {
-                $this->processorFields[] = new NameValuePair($nvp);
+                $this->processorFields[] = $nvp instanceof NameValuePair ? $nvp : NameValuePair::fromArray($nvp);
             }
         }
 
@@ -140,14 +152,7 @@ class Transaction extends Entity
 
     public function processorFieldsToArray(): array
     {
-        if ($this->processorFields()) {
-            $fields = [];
-            foreach ($this->processorFields() as $field) {
-                $fields[] = ($field instanceof NameValuePair) ? $field->toArray() : null;
-            }
-            return $fields;
-        }
-        return [];
+        return array_map(fn (NameValuePair $field) => $field->toArray(), $this->processorFields());
     }
 
     /**
@@ -155,14 +160,12 @@ class Transaction extends Entity
      */
     public function additionalData(): array
     {
-        if ($this->processorFields()) {
-            $data = [];
-            foreach ($this->processorFields() as $field) {
-                $data[$field->keyword()] = $field->value();
-            }
-            return $data;
+        $data = [];
+        foreach ($this->processorFields() as $field) {
+            $data[$field->keyword()] = $field->value();
         }
-        return [];
+
+        return $data;
     }
 
     public function toArray(): array
@@ -173,13 +176,13 @@ class Transaction extends Entity
             'paymentMethod' => $this->paymentMethod(),
             'paymentMethodName' => $this->paymentMethodName(),
             'issuerName' => $this->issuerName(),
-            'amount' => $this->amount() ? $this->amount()->toArray() : null,
+            'amount' => $this->amount()?->toArray(),
             'authorization' => $this->authorization(),
             'reference' => $this->reference(),
             'receipt' => $this->receipt(),
             'franchise' => $this->franchise(),
             'refunded' => $this->refunded(),
-            'discount' => $this->discount() ? $this->discount()->toArray() : null,
+            'discount' => $this->discount()?->toArray(),
             'processorFields' => $this->processorFieldsToArray(),
         ]);
     }

@@ -3,46 +3,36 @@
 namespace PlacetoPay\PlacetoPaySdk\Entities;
 
 use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 
 class Status extends Entity
 {
-    public const ST_OK = 'OK';
-    public const ST_FAILED = 'FAILED';
-    public const ST_APPROVED = 'APPROVED';
-    public const ST_APPROVED_PARTIAL = 'APPROVED_PARTIAL';
-    public const ST_REJECTED = 'REJECTED';
-    public const ST_PENDING = 'PENDING';
-    public const ST_PENDING_VALIDATION = 'PENDING_VALIDATION';
-    public const ST_REFUNDED = 'REFUNDED';
-    public const ST_ERROR = 'ERROR';
-    public const ST_UNKNOWN = 'UNKNOWN';
+    public function __construct(
+        protected string $status = 'ERROR',
+        protected string $reason = '',
+        protected string $message = '',
+        protected string $date = '',
+    ) {
+    }
 
-    protected string $status;
-    protected string $reason;
-    protected string $message = '';
-    protected string $date = '';
-
-    protected static array $STATUSES = [
-        self::ST_OK,
-        self::ST_FAILED,
-        self::ST_APPROVED,
-        self::ST_APPROVED_PARTIAL,
-        self::ST_REJECTED,
-        self::ST_PENDING,
-        self::ST_PENDING_VALIDATION,
-        self::ST_REFUNDED,
-        self::ST_ERROR,
-        self::ST_UNKNOWN,
-    ];
-
-    public function __construct(array $data)
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['status', 'reason', 'message', 'date']);
+        return new self(
+            status: $data['status'] ?? StatusType::ERROR->value,
+            reason: $data['reason'] ?? '',
+            message: $data['message'] ?? '',
+            date: $data['date'] ?? '',
+        );
     }
 
     public function status(): string
     {
-        return $this->status ?? self::ST_ERROR;
+        return $this->status;
+    }
+
+    public function type(): StatusType
+    {
+        return StatusType::fromName($this->status());
     }
 
     public function reason(): string
@@ -62,22 +52,22 @@ class Status extends Entity
 
     public function isSuccessful(): bool
     {
-        return $this->status() == self::ST_OK;
+        return $this->type() === StatusType::OK;
     }
 
     public function isApproved(): bool
     {
-        return $this->status() == self::ST_APPROVED;
+        return $this->type() === StatusType::APPROVED;
     }
 
     public function isRejected(): bool
     {
-        return $this->status() == self::ST_REJECTED;
+        return $this->type() === StatusType::REJECTED;
     }
 
     public function isError(): bool
     {
-        return $this->status() == self::ST_ERROR;
+        return $this->type() === StatusType::ERROR;
     }
 
     public function toArray(): array
@@ -90,13 +80,13 @@ class Status extends Entity
         ];
     }
 
-    public static function quick(string $status, string $reason, string $message = '', string $date = ''): self
+    public static function quick(StatusType|string $status, string $reason, string $message = '', string $date = ''): self
     {
-        return new self([
-            'status' => $status,
-            'reason' => $reason,
-            'message' => $message,
-            'date' => $date ?: date('c'),
-        ]);
+        return new self(
+            status: $status instanceof StatusType ? $status->value : $status,
+            reason: $reason,
+            message: $message,
+            date: $date ?: date('c'),
+        );
     }
 }

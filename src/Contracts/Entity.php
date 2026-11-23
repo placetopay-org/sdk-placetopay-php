@@ -3,31 +3,28 @@
 namespace PlacetoPay\PlacetoPaySdk\Contracts;
 
 use PlacetoPay\PlacetoPaySdk\Helpers\ArrayHelper;
-use PlacetoPay\PlacetoPaySdk\Traits\LoaderTrait;
 
 abstract class Entity
 {
-    use LoaderTrait;
-
     /**
      * Extracts the information for the entity.
-     * @return array
      */
     abstract public function toArray(): array;
 
-    protected function loadEntity($data, string $attribute, string $class): self
+    /**
+     * Resolves a nested entity from an instance or from its array representation.
+     *
+     * @template T of Entity
+     * @param class-string<T> $class
+     * @return T|null
+     */
+    protected static function parseEntity(mixed $data, string $class): ?self
     {
-        if ($data) {
-            if (is_array($data)) {
-                $data = new $class($data);
-            }
-            if (!($data instanceof $class)) {
-                $data = null;
-            }
-            $this->{$attribute} = $data;
+        if ($data instanceof $class) {
+            return $data;
         }
 
-        return $this;
+        return is_array($data) && $data ? $class::fromArray($data) : null;
     }
 
     protected function arrayFilter(array $array): array

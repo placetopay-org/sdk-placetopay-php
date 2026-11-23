@@ -6,16 +6,26 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Item extends Entity
 {
-    protected string $sku = '';
-    protected string $name = '';
-    protected string $category = '';
-    protected string $qty = '';
-    protected string $price = '';
-    protected string $tax = '';
+    public function __construct(
+        protected string $sku = '',
+        protected string $name = '',
+        protected string $category = '',
+        protected string $qty = '',
+        protected string $price = '',
+        protected string $tax = '',
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['sku', 'name', 'category', 'qty', 'price', 'tax']);
+        return new self(
+            sku: $data['sku'] ?? '',
+            name: $data['name'] ?? '',
+            category: $data['category'] ?? '',
+            qty: $data['qty'] ?? '',
+            price: $data['price'] ?? '',
+            tax: $data['tax'] ?? '',
+        );
     }
 
     public function sku(): string

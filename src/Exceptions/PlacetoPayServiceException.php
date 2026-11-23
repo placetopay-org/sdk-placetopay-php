@@ -6,7 +6,7 @@ use Throwable;
 
 class PlacetoPayServiceException extends PlacetoPayException
 {
-    public static function fromServiceException(Throwable $e)
+    public static function fromServiceException(Throwable $e): self
     {
         return new self('Error handling operation', 100, $e);
     }

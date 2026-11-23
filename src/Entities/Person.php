@@ -3,23 +3,34 @@
 namespace PlacetoPay\PlacetoPaySdk\Entities;
 
 use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
-use PlacetoPay\PlacetoPaySdk\Helpers\DocumentHelper;
+use PlacetoPay\PlacetoPaySdk\Enums\DocumentType;
 
 class Person extends Entity
 {
-    protected string $document = '';
-    protected string $documentType = '';
-    protected string $name = '';
-    protected string $surname = '';
-    protected string $company = '';
-    protected string $email = '';
-    protected string $mobile = '';
-    protected ?Address $address = null;
+    public function __construct(
+        protected string $document = '',
+        protected string $documentType = '',
+        protected string $name = '',
+        protected string $surname = '',
+        protected string $company = '',
+        protected string $email = '',
+        protected string $mobile = '',
+        protected ?Address $address = null,
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['document', 'documentType', 'name', 'surname', 'company', 'email', 'mobile']);
-        $this->loadEntity($data['address'] ?? null, 'address', Address::class);
+        return new self(
+            document: $data['document'] ?? '',
+            documentType: $data['documentType'] ?? '',
+            name: $data['name'] ?? '',
+            surname: $data['surname'] ?? '',
+            company: $data['company'] ?? '',
+            email: $data['email'] ?? '',
+            mobile: $data['mobile'] ?? '',
+            address: self::parseEntity($data['address'] ?? null, Address::class),
+        );
     }
 
     public function document(): string
@@ -64,7 +75,7 @@ class Person extends Entity
 
     public function isBusiness(): bool
     {
-        return $this->documentType() && DocumentHelper::businessDocument($this->documentType());
+        return DocumentType::tryFrom($this->documentType())?->isBusiness() ?? false;
     }
 
     public function toArray(): array
@@ -77,7 +88,7 @@ class Person extends Entity
             'email' => $this->email(),
             'mobile' => $this->mobile(),
             'company' => $this->company(),
-            'address' => $this->address() ? $this->address()->toArray() : null,
+            'address' => $this->address()?->toArray(),
         ]);
     }
 }

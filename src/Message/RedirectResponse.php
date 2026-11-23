@@ -10,19 +10,27 @@ class RedirectResponse extends Entity
 {
     use StatusTrait;
 
-    protected string $requestId = '';
-    protected string $processUrl = '';
+    public function __construct(
+        Status $status,
+        protected ?int $requestId = null,
+        protected string $processUrl = '',
+    ) {
+        $this->status = $status;
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['requestId', 'processUrl']);
-        $this->loadEntity($data['status'], 'status', Status::class);
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            requestId: $data['requestId'] ?? null,
+            processUrl: $data['processUrl'] ?? '',
+        );
     }
 
     /**
      * Unique transaction code for this request.
      */
-    public function requestId(): string
+    public function requestId(): ?int
     {
         return $this->requestId;
     }

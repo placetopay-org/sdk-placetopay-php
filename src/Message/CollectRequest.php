@@ -3,21 +3,36 @@
 namespace PlacetoPay\PlacetoPaySdk\Message;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Instrument;
+use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 
 class CollectRequest extends RedirectRequest
 {
-    protected Instrument $instrument;
+    /**
+     * @param mixed ...$request named arguments accepted by RedirectRequest::__construct, payer is required
+     * @throws PlacetoPayException
+     */
+    public function __construct(
+        protected Instrument $instrument,
+        protected ?string $provider = null,
+        mixed ...$request,
+    ) {
+        parent::__construct(...$request);
 
-    protected string $returnUrl = '';
-    protected string $ipAddress = '';
-    protected string $userAgent = '';
-    protected ?string $provider = null;
+        if (!$this->payer) {
+            throw PlacetoPayException::forDataNotProvided('The payer is required to collect');
+        }
+    }
 
-    public function __construct(array $data = [])
+    /**
+     * @throws PlacetoPayException
+     */
+    public static function fromArray(array $data): self
     {
-        parent::__construct($data);
-        $this->loadEntity($data['instrument'], 'instrument', Instrument::class);
-        $this->provider = $data['provider'] ?? null;
+        return new self(...[
+            ...self::attributesFromArray($data),
+            'instrument' => self::parseEntity($data['instrument'] ?? null, Instrument::class) ?? new Instrument(),
+            'provider' => $data['provider'] ?? null,
+        ]);
     }
 
     public function provider(): ?string
@@ -33,7 +48,7 @@ class CollectRequest extends RedirectRequest
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'instrument' => $this->instrument() ? $this->instrument()->toArray() : null,
+            'instrument' => $this->instrument()->toArray(),
             'provider' => $this->provider(),
         ]);
     }

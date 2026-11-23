@@ -6,34 +6,29 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class AmountConversion extends Entity
 {
-    protected ?AmountBase $from = null;
-    protected ?AmountBase $to = null;
-    protected float $factor = 1;
+    public function __construct(
+        protected ?AmountBase $from = null,
+        protected ?AmountBase $to = null,
+        protected float $factor = 1,
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        if (isset($data['from'])) {
-            $this->setFrom($data['from']);
-        }
-
-        if (isset($data['to'])) {
-            $this->setTo($data['to']);
-        }
-
-        if (isset($data['factor'])) {
-            $this->setFactor($data['factor']);
-        }
+        return new self(
+            from: self::parseEntity($data['from'] ?? null, AmountBase::class),
+            to: self::parseEntity($data['to'] ?? null, AmountBase::class),
+            factor: $data['factor'] ?? 1,
+        );
     }
 
     /**
      * Helper function to quickly set all the values.
-     * @param $base
-     * @return $this
      */
-    public function setAmountBase($base)
+    public function setAmountBase(AmountBase|array $base): static
     {
         if (is_array($base)) {
-            $base = new AmountBase($base);
+            $base = AmountBase::fromArray($base);
         }
 
         $this->setTo($base);
@@ -42,40 +37,34 @@ class AmountConversion extends Entity
         return $this;
     }
 
-    /**
-     * @return AmountBase
-     */
-    public function from(): AmountBase
+    public function from(): ?AmountBase
     {
         return $this->from;
     }
 
-    /**
-     * @return AmountBase
-     */
-    public function to(): AmountBase
+    public function to(): ?AmountBase
     {
         return $this->to;
     }
 
-    public function factor()
+    public function factor(): float
     {
         return $this->factor;
     }
 
-    public function setFrom($from)
+    public function setFrom(AmountBase|array|null $from): static
     {
-        $this->loadEntity($from, 'from', AmountBase::class);
+        $this->from = self::parseEntity($from, AmountBase::class);
         return $this;
     }
 
-    public function setTo($to)
+    public function setTo(AmountBase|array|null $to): static
     {
-        $this->loadEntity($to, 'to', AmountBase::class);
+        $this->to = self::parseEntity($to, AmountBase::class);
         return $this;
     }
 
-    public function setFactor($factor)
+    public function setFactor(float $factor): static
     {
         $this->factor = $factor;
         return $this;
@@ -84,8 +73,8 @@ class AmountConversion extends Entity
     public function toArray(): array
     {
         return [
-            'from' => $this->from()->toArray(),
-            'to' => $this->to()->toArray(),
+            'from' => $this->from()?->toArray(),
+            'to' => $this->to()?->toArray(),
             'factor' => $this->factor(),
         ];
     }

@@ -6,20 +6,24 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Instrument extends Entity
 {
-    protected ?Account $bank = null;
-    protected ?Token $token = null;
-    protected ?Credit $credit = null;
-    protected string $pin;
-    protected string $password;
+    public function __construct(
+        protected ?Account $bank = null,
+        protected ?Token $token = null,
+        protected ?Credit $credit = null,
+        protected string $pin = '',
+        protected string $password = '',
+    ) {
+    }
 
-    public function __construct($data = [])
+    public static function fromArray(array $data): self
     {
-        $this->loadEntity($data['bank'] ?? null, 'bank', Account::class);
-        $this->loadEntity($data['credit'] ?? null, 'credit', Credit::class);
-        $this->loadEntity($data['token'] ?? null, 'token', Token::class);
-
-        $this->pin = $data['pin'] ?? '';
-        $this->password = $data['password'] ?? '';
+        return new self(
+            bank: self::parseEntity($data['bank'] ?? null, Account::class),
+            token: self::parseEntity($data['token'] ?? null, Token::class),
+            credit: self::parseEntity($data['credit'] ?? null, Credit::class),
+            pin: $data['pin'] ?? '',
+            password: $data['password'] ?? '',
+        );
     }
 
     public function bank(): ?Account
@@ -50,9 +54,9 @@ class Instrument extends Entity
     public function toArray(): array
     {
         return $this->arrayFilter([
-            'bank' => $this->bank() ? $this->bank()->toArray() : null,
-            'credit' => $this->credit() ? $this->credit()->toArray() : null,
-            'token' => $this->token() ? $this->token()->toArray() : null,
+            'bank' => $this->bank()?->toArray(),
+            'credit' => $this->credit()?->toArray(),
+            'token' => $this->token()?->toArray(),
             'pin' => $this->pin(),
             'password' => $this->password(),
         ]);

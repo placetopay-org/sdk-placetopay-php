@@ -9,43 +9,65 @@ class Payment extends Entity
 {
     use FieldsTrait;
 
-    protected string $reference;
-    protected string $description = '';
-    protected ?Amount $amount = null;
-    protected bool $allowPartial = false;
-    protected ?Person $shipping = null;
     /**
      * @var Item[]
      */
     protected array $items = [];
-    protected ?Recurring $recurring = null;
-    protected ?Discount $discount = null;
-    protected ?Instrument $instrument = null;
-    public bool $subscribe = false;
-    protected ?int $agreement = null;
-    protected string $agreementType = '';
 
     /** @var PaymentModifier[] */
     protected array $modifiers = [];
 
-    public function __construct(array $data = [])
+    /**
+     * @param array<Item|array> $items
+     * @param array<NameValuePair|array> $fields
+     * @param array<PaymentModifier|array> $modifiers
+     */
+    public function __construct(
+        protected string $reference = '',
+        protected string $description = '',
+        protected ?Amount $amount = null,
+        protected bool $allowPartial = false,
+        protected ?Person $shipping = null,
+        array $items = [],
+        protected ?Recurring $recurring = null,
+        protected ?Discount $discount = null,
+        protected ?Instrument $instrument = null,
+        public bool $subscribe = false,
+        protected ?int $agreement = null,
+        protected string $agreementType = '',
+        array $fields = [],
+        array $modifiers = [],
+    ) {
+        $this->setItems($items);
+        $this->setFields($fields);
+        $this->setModifiers($modifiers);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['reference', 'description', 'allowPartial', 'subscribe', 'agreement', 'agreementType']);
+        return new self(...self::attributesFromArray($data));
+    }
 
-        $this->loadEntity($data['amount'] ?? null, 'amount', Amount::class);
-        $this->loadEntity($data['recurring'] ?? null, 'recurring', Recurring::class);
-        $this->loadEntity($data['shipping'] ?? null, 'shipping', Person::class);
-        $this->loadEntity($data['discount'] ?? null, 'discount', Discount::class);
-
-        if (isset($data['items'])) {
-            $this->setItems($data['items']);
-        }
-        if (isset($data['fields'])) {
-            $this->setFields($data['fields']);
-        }
-        if (isset($data['modifiers']) && is_array($data['modifiers'])) {
-            $this->setModifiers($data['modifiers']);
-        }
+    /**
+     * Maps the service representation of a payment to the constructor arguments.
+     */
+    protected static function attributesFromArray(array $data): array
+    {
+        return [
+            'reference' => $data['reference'] ?? '',
+            'description' => $data['description'] ?? '',
+            'amount' => self::parseEntity($data['amount'] ?? null, Amount::class),
+            'allowPartial' => $data['allowPartial'] ?? false,
+            'shipping' => self::parseEntity($data['shipping'] ?? null, Person::class),
+            'items' => $data['items'] ?? [],
+            'recurring' => self::parseEntity($data['recurring'] ?? null, Recurring::class),
+            'discount' => self::parseEntity($data['discount'] ?? null, Discount::class),
+            'subscribe' => $data['subscribe'] ?? false,
+            'agreement' => $data['agreement'] ?? null,
+            'agreementType' => $data['agreementType'] ?? '',
+            'fields' => $data['fields'] ?? [],
+            'modifiers' => is_array($data['modifiers'] ?? null) ? $data['modifiers'] : [],
+        ];
     }
 
     public function reference(): string
@@ -83,6 +105,9 @@ class Payment extends Entity
         return $this->shipping;
     }
 
+    /**
+     * @return Item[]
+     */
     public function items(): array
     {
         return $this->items;
@@ -103,13 +128,13 @@ class Payment extends Entity
         return $this->discount;
     }
 
-    public function setReference($reference): self
+    public function setReference(string $reference): self
     {
         $this->reference = $reference;
         return $this;
     }
 
-    public function setDescription($description): self
+    public function setDescription(string $description): self
     {
         $this->description = $description;
         return $this;
@@ -117,25 +142,17 @@ class Payment extends Entity
 
     public function setItems(array $items): self
     {
-        if (isset($items['item'])) {
-            $items = $items['item'];
-        }
-        $this->items = array_map(function ($data) {
-            return is_array($data) ? new Item($data) : $data;
-        }, $items);
+        $this->items = array_map(
+            fn (Item|array $data) => is_array($data) ? Item::fromArray($data) : $data,
+            $items['item'] ?? $items
+        );
 
         return $this;
     }
 
     public function itemsToArray(): array
     {
-        if ($this->items() && is_array($this->items())) {
-            return array_map(function (Item $item) {
-                return $item->toArray();
-            }, $this->items());
-        }
-
-        return [];
+        return array_map(fn (Item $item) => $item->toArray(), $this->items());
     }
 
     /**
@@ -157,10 +174,13 @@ class Payment extends Entity
         return $this;
     }
 
-    public function addModifier($modifier): self
+    /**
+     * @param PaymentModifier|array $modifier anything else is ignored
+     */
+    public function addModifier(mixed $modifier): self
     {
         if (is_array($modifier)) {
-            $modifier = new PaymentModifier($modifier);
+            $modifier = PaymentModifier::fromArray($modifier);
         }
 
         if ($modifier instanceof PaymentModifier) {
@@ -172,12 +192,7 @@ class Payment extends Entity
 
     public function modifiersToArray(): array
     {
-        $modifiers = [];
-        foreach ($this->modifiers as $modifier) {
-            $modifiers[] = $modifier->toArray();
-        }
-
-        return $modifiers;
+        return array_map(fn (PaymentModifier $modifier) => $modifier->toArray(), $this->modifiers);
     }
 
     public function modifier(string $type, ?string $code = null): ?PaymentModifier
@@ -198,11 +213,11 @@ class Payment extends Entity
             'agreementType' => $this->agreementType(),
             'reference' => $this->reference(),
             'description' => $this->description(),
-            'amount' => $this->amount() ? $this->amount()->toArray() : null,
-            'shipping' => $this->shipping() ? $this->shipping()->toArray() : null,
+            'amount' => $this->amount()?->toArray(),
+            'shipping' => $this->shipping()?->toArray(),
             'items' => $this->itemsToArray(),
-            'recurring' => $this->recurring() ? $this->recurring()->toArray() : null,
-            'discount' => $this->discount() ? $this->discount()->toArray() : null,
+            'recurring' => $this->recurring()?->toArray(),
+            'discount' => $this->discount()?->toArray(),
             'fields' => $this->fieldsToArray(),
             'subscribe' => $this->subscribe() ?: null,
             'allowPartial' => $this->allowPartial ?: null,

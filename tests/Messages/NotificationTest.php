@@ -2,7 +2,7 @@
 
 namespace PlacetoPay\PlacetoPaySdk\Tests\Messages;
 
-use PlacetoPay\PlacetoPaySdk\Entities\Status;
+use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 use PlacetoPay\PlacetoPaySdk\Message\Notification;
 use PlacetoPay\PlacetoPaySdk\Tests\BaseTestCase;
 
@@ -11,7 +11,7 @@ class NotificationTest extends BaseTestCase
     public function testItParsesCorrectlyTheNotification()
     {
         $data = unserialize('a:4:{s:6:"status";a:4:{s:6:"status";s:8:"APPROVED";s:6:"reason";s:2:"00";s:7:"message";s:82:"Se ha aprobado su pago, puede imprimir el recibo o volver a la pagina del comercio";s:4:"date";s:25:"2016-10-10T16:39:57-05:00";}s:9:"requestId";i:83;s:9:"reference";s:20:"TEST_20161010_213937";s:9:"signature";s:40:"8fb4beea130ab3e75a1de956bd0213892e0f6839";}');
-        $notification = new Notification($data, '024h1IlD');
+        $notification = Notification::fromArray($data, '024h1IlD');
 
         $this->assertTrue($notification->isValidNotification(), 'Valid notification');
         $this->assertTrue($notification->isApproved(), $notification->status()->status());
@@ -33,7 +33,7 @@ class NotificationTest extends BaseTestCase
         $notification = $gateway->readNotification($data);
 
         $this->assertTrue($notification->isValidNotification(), 'Its a valid notification');
-        $this->assertEquals(Status::ST_REJECTED, $notification->status()->status());
+        $this->assertSame(StatusType::REJECTED, $notification->status()->type());
         $this->assertFalse($notification->isApproved());
     }
 }

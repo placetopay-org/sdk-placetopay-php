@@ -6,22 +6,26 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Instrument extends Entity
 {
-    protected ?Account $bank = null;
-    protected ?Token $token = null;
-    protected ?Credit $credit = null;
-    protected string $pin;
-    protected string $password;
-    protected string $pocket;
+    public function __construct(
+        protected ?Account $bank = null,
+        protected ?Token $token = null,
+        protected ?Credit $credit = null,
+        protected string $pin = '',
+        protected string $password = '',
+        protected string $pocket = '',
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->loadEntity($data['bank'] ?? null, 'bank', Account::class);
-        $this->loadEntity($data['credit'] ?? null, 'credit', Credit::class);
-        $this->loadEntity($data['token'] ?? null, 'token', Token::class);
-
-        $this->pin = $data['pin'] ?? '';
-        $this->password = $data['password'] ?? '';
-        $this->pocket = (string)($data['pocket'] ?? '');
+        return new self(
+            bank: self::parseEntity($data['bank'] ?? null, Account::class),
+            token: self::parseEntity($data['token'] ?? null, Token::class),
+            credit: self::parseEntity($data['credit'] ?? null, Credit::class),
+            pin: $data['pin'] ?? '',
+            password: $data['password'] ?? '',
+            pocket: (string)($data['pocket'] ?? ''),
+        );
     }
 
     public function bank(): ?Account

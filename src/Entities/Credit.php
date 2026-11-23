@@ -6,27 +6,43 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Credit extends Entity
 {
-    protected string $code = '';
-    protected string $type = '';
-    protected string $groupCode = '';
-    protected int $installment = 1;
-
-    public function __construct(array $data = [])
-    {
-        $this->load($data, ['code', 'type', 'groupCode', 'installment']);
+    public function __construct(
+        protected int $installment,
+        protected ?string $code = null,
+        protected ?string $type = null,
+        protected ?string $groupCode = null,
+    ) {
     }
 
-    public function code(): string
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            installment: $data['installment'] ?? 1,
+            code: $data['code'] ?? null,
+            type: $data['type'] ?? null,
+            groupCode: $data['groupCode'] ?? null,
+        );
+    }
+
+    /**
+     * Credit charged in a single installment.
+     */
+    public static function oneInstallment(?string $code = null, ?string $type = null, ?string $groupCode = null): self
+    {
+        return new self(installment: 1, code: $code, type: $type, groupCode: $groupCode);
+    }
+
+    public function code(): ?string
     {
         return $this->code;
     }
 
-    public function type(): string
+    public function type(): ?string
     {
         return $this->type;
     }
 
-    public function groupCode(): string
+    public function groupCode(): ?string
     {
         return $this->groupCode;
     }

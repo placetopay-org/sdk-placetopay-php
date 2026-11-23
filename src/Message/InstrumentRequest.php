@@ -9,22 +9,28 @@ use PlacetoPay\PlacetoPaySdk\Helpers\ArrayHelper;
 
 class InstrumentRequest extends Entity
 {
-    protected Instrument $instrument;
-    protected string $locale = '';
+    /**
+     * @throws PlacetoPayException
+     */
+    public function __construct(
+        protected Instrument $instrument,
+        protected string $locale = '',
+    ) {
+        $token = $this->instrument->token();
+        if (!$token?->token() && !$token?->subtoken()) {
+            throw PlacetoPayException::forDataNotProvided('The instrument token or subtoken is required');
+        }
+    }
 
     /**
      * @throws PlacetoPayException
      */
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->loadEntity($data['instrument'] ?? null, 'instrument', Instrument::class);
-
-        $token = isset($this->instrument) ? $this->instrument->token() : null;
-        if (!$token?->token() && !$token?->subtoken()) {
-            throw PlacetoPayException::forDataNotProvided('The instrument token or subtoken is required');
-        }
-
-        $this->load($data, ['locale']);
+        return new self(
+            instrument: self::parseEntity($data['instrument'] ?? null, Instrument::class) ?? new Instrument(),
+            locale: $data['locale'] ?? '',
+        );
     }
 
     public function instrument(): Instrument

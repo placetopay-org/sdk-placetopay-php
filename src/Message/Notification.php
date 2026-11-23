@@ -11,14 +11,25 @@ class Notification extends Entity
     use StatusTrait;
     private const SHA256_PREFIX = 'sha256:';
 
-    protected int $requestId;
-    protected string $reference;
-    protected string $signature;
+    public function __construct(
+        Status $status,
+        private readonly string $tranKey,
+        protected int $requestId = 0,
+        protected string $reference = '',
+        protected string $signature = '',
+    ) {
+        $this->status = $status;
+    }
 
-    public function __construct(array $data, private readonly string $tranKey)
+    public static function fromArray(array $data, string $tranKey): self
     {
-        $this->load($data, ['requestId', 'reference', 'signature']);
-        $this->loadEntity($data['status'], 'status', Status::class);
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            tranKey: $tranKey,
+            requestId: $data['requestId'] ?? 0,
+            reference: $data['reference'] ?? '',
+            signature: $data['signature'] ?? '',
+        );
     }
 
     public function requestId(): int

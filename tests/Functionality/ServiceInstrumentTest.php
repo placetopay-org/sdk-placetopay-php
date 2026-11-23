@@ -46,7 +46,7 @@ class ServiceInstrumentTest extends BaseTestCase
 
     public function testItObtainsTheInstrumentInformation()
     {
-        $response = $this->getService()->instrumentInformation(new InstrumentRequest([
+        $response = $this->getService()->instrumentInformation(InstrumentRequest::fromArray([
             'instrument' => ['token' => ['token' => self::TOKEN]],
         ]));
 
@@ -69,7 +69,7 @@ class ServiceInstrumentTest extends BaseTestCase
 
     public function testItReadsTheRequirementsAsSpelledByTheSpecification()
     {
-        $information = new InstrumentInformation([
+        $information = InstrumentInformation::fromArray([
             'status' => ['status' => 'OK', 'reason' => '00'],
             'requiereOtp' => true,
             'requiereCvv2' => 'false',

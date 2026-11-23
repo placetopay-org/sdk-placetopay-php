@@ -10,7 +10,7 @@ class AmountTest extends BaseTestCase
 {
     public function testItWorksWithTaxes()
     {
-        $amount = new Amount([
+        $amount = Amount::fromArray([
             'taxes' => $taxes = [
                 [
                     'kind' => 'valueAddedTax',
@@ -62,7 +62,7 @@ class AmountTest extends BaseTestCase
 
     public function testItWorksWithDetails()
     {
-        $amount = new Amount([
+        $amount = Amount::fromArray([
             'details' => $details = [
                 [
                     'kind' => 'discount',
@@ -126,8 +126,8 @@ class AmountTest extends BaseTestCase
 
     public function testItAcceptsTaxDetailInstances()
     {
-        $amount = new Amount(['currency' => 'COP', 'total' => 1190]);
-        $amount->setTaxes([new TaxDetail(['kind' => 'valueAddedTax', 'amount' => 190]), ['kind' => 'ice', 'amount' => 10]]);
+        $amount = Amount::fromArray(['currency' => 'COP', 'total' => 1190]);
+        $amount->setTaxes([TaxDetail::fromArray(['kind' => 'valueAddedTax', 'amount' => 190]), ['kind' => 'ice', 'amount' => 10]]);
 
         $this->assertCount(2, $amount->taxes());
         $this->assertContainsOnlyInstancesOf(TaxDetail::class, $amount->taxes());

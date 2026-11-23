@@ -9,13 +9,11 @@ class DispersionPayment extends Payment
      */
     protected array $dispersion = [];
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        parent::__construct($data);
+        $payment = new self(...self::attributesFromArray($data));
 
-        if (isset($data['dispersion'])) {
-            $this->setDispersion($data['dispersion']);
-        }
+        return $payment->setDispersion($data['dispersion'] ?? []);
     }
 
     /**
@@ -26,10 +24,13 @@ class DispersionPayment extends Payment
         return $this->dispersion;
     }
 
+    /**
+     * @param array<Payment|array> $data
+     */
     public function setDispersion(array $data): self
     {
         foreach ($data as $payment) {
-            $entity = new Payment($payment);
+            $entity = $payment instanceof Payment ? $payment : Payment::fromArray($payment);
             $entity->setReference($this->reference())
                 ->setDescription($this->description());
             $this->dispersion[] = $entity;

@@ -7,19 +7,30 @@ use PlacetoPay\PlacetoPaySdk\Enums\DocumentType;
 
 class Person extends Entity
 {
-    protected string $document = '';
-    protected string $documentType = '';
-    protected string $name = '';
-    protected string $surname = '';
-    protected string $company = '';
-    protected string $email = '';
-    protected string $mobile = '';
-    protected ?Address $address = null;
+    public function __construct(
+        protected string $document = '',
+        protected string $documentType = '',
+        protected string $name = '',
+        protected string $surname = '',
+        protected string $company = '',
+        protected string $email = '',
+        protected string $mobile = '',
+        protected ?Address $address = null,
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['document', 'documentType', 'name', 'surname', 'company', 'email', 'mobile']);
-        $this->loadEntity($data['address'] ?? null, 'address', Address::class);
+        return new self(
+            document: $data['document'] ?? '',
+            documentType: $data['documentType'] ?? '',
+            name: $data['name'] ?? '',
+            surname: $data['surname'] ?? '',
+            company: $data['company'] ?? '',
+            email: $data['email'] ?? '',
+            mobile: $data['mobile'] ?? '',
+            address: self::parseEntity($data['address'] ?? null, Address::class),
+        );
     }
 
     public function document(): string

@@ -6,23 +6,39 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Token extends Entity
 {
-    protected string $token = '';
-    protected string $subtoken = '';
-    protected string $franchise = '';
-    protected string $franchiseName = '';
-    protected string $issuerName = '';
-    protected string $lastDigits = '';
-    protected string $validUntil = '';
-    protected string $bin = '';
-    protected string $owner = '';
-    // Just in case the token will be utilized
-    protected string $cvv = '';
-    protected ?int $installments = null;
+    /**
+     * @param string $cvv Just in case the token will be utilized
+     */
+    public function __construct(
+        protected string $token = '',
+        protected string $subtoken = '',
+        protected string $franchise = '',
+        protected string $franchiseName = '',
+        protected string $issuerName = '',
+        protected string $lastDigits = '',
+        protected string $validUntil = '',
+        protected string $bin = '',
+        protected string $owner = '',
+        protected string $cvv = '',
+        protected ?int $installments = null,
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['token', 'subtoken', 'franchise', 'franchiseName', 'issuerName', 'lastDigits', 'validUntil', 'bin', 'owner', 'cvv']);
-        $this->installments = is_numeric($data['installments'] ?? null) ? (int)$data['installments'] : null;
+        return new self(
+            token: $data['token'] ?? '',
+            subtoken: $data['subtoken'] ?? '',
+            franchise: $data['franchise'] ?? '',
+            franchiseName: $data['franchiseName'] ?? '',
+            issuerName: $data['issuerName'] ?? '',
+            lastDigits: $data['lastDigits'] ?? '',
+            validUntil: $data['validUntil'] ?? '',
+            bin: $data['bin'] ?? '',
+            owner: $data['owner'] ?? '',
+            cvv: $data['cvv'] ?? '',
+            installments: is_numeric($data['installments'] ?? null) ? (int)$data['installments'] : null,
+        );
     }
 
     public function token(): string

@@ -9,15 +9,24 @@ class Subscription extends Entity
 {
     use FieldsTrait;
 
-    protected string $reference = '';
-    protected string $description = '';
+    /**
+     * @param array<NameValuePair|array> $fields
+     */
+    public function __construct(
+        protected string $reference = '',
+        protected string $description = '',
+        array $fields = [],
+    ) {
+        $this->setFields($fields);
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['reference', 'description']);
-        if (isset($data['fields'])) {
-            $this->setFields($data['fields']);
-        }
+        return new self(
+            reference: $data['reference'] ?? '',
+            description: $data['description'] ?? '',
+            fields: $data['fields'] ?? [],
+        );
     }
 
     public function reference(): string

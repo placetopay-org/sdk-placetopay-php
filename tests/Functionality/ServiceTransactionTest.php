@@ -35,7 +35,7 @@ class ServiceTransactionTest extends BaseTestCase
 
     public function testItReleasesAPreauthorizationWithAZeroAmount()
     {
-        $this->getService()->checkout(640, new AmountBase(['currency' => 'USD', 'total' => 0]));
+        $this->getService()->checkout(640, AmountBase::fromArray(['currency' => 'USD', 'total' => 0]));
 
         $this->assertEquals(['currency' => 'USD', 'total' => 0], $this->sentTransaction()['amount']);
     }
@@ -70,7 +70,7 @@ class ServiceTransactionTest extends BaseTestCase
 
     public function testItAcceptsATransactionRequest()
     {
-        $response = $this->getService()->transaction(new TransactionRequest([
+        $response = $this->getService()->transaction(TransactionRequest::fromArray([
             'internalReference' => 640,
             'action' => TransactionAction::CHECKOUT,
         ]));

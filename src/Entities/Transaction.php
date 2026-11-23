@@ -10,38 +10,51 @@ class Transaction extends Entity
     use StatusTrait;
 
     /**
-     * Reference as the commerce provides.
-     */
-    protected string $reference;
-    /**
-     * Reference for PlacetoPay.
-     */
-    protected ?int $internalReference = null;
-    protected string $paymentMethod = '';
-    protected string $paymentMethodName = '';
-    protected string $issuerName = '';
-    protected ?Discount $discount = null;
-    protected AmountConversion $amount;
-    protected string $authorization = '';
-    protected string $receipt = '';
-    protected string $franchise = '';
-    protected bool $refunded = false;
-    /**
      * @var NameValuePair[]
      */
     protected array $processorFields = [];
 
-    public function __construct(array $data = [])
+    /**
+     * @param string $reference Reference as the commerce provides.
+     * @param int|null $internalReference Reference for PlacetoPay.
+     * @param array<NameValuePair|array> $processorFields
+     */
+    public function __construct(
+        Status $status,
+        protected string $reference = '',
+        protected ?int $internalReference = null,
+        protected string $paymentMethod = '',
+        protected string $paymentMethodName = '',
+        protected string $issuerName = '',
+        protected ?Discount $discount = null,
+        protected ?AmountConversion $amount = null,
+        protected string $authorization = '',
+        protected string $receipt = '',
+        protected string $franchise = '',
+        protected bool $refunded = false,
+        array $processorFields = [],
+    ) {
+        $this->status = $status;
+        $this->setProcessorFields($processorFields);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['reference', 'internalReference', 'paymentMethod', 'paymentMethodName', 'issuerName', 'authorization', 'receipt', 'franchise', 'refunded']);
-
-        $this->loadEntity($data['status'], 'status', Status::class);
-        $this->loadEntity($data['amount'] ?? null, 'amount', AmountConversion::class);
-        $this->loadEntity($data['discount'] ?? null, 'discount', Discount::class);
-
-        if (isset($data['processorFields'])) {
-            $this->setProcessorFields($data['processorFields']);
-        }
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            reference: $data['reference'] ?? '',
+            internalReference: $data['internalReference'] ?? null,
+            paymentMethod: $data['paymentMethod'] ?? '',
+            paymentMethodName: $data['paymentMethodName'] ?? '',
+            issuerName: $data['issuerName'] ?? '',
+            discount: self::parseEntity($data['discount'] ?? null, Discount::class),
+            amount: self::parseEntity($data['amount'] ?? null, AmountConversion::class),
+            authorization: $data['authorization'] ?? '',
+            receipt: $data['receipt'] ?? '',
+            franchise: $data['franchise'] ?? '',
+            refunded: $data['refunded'] ?? false,
+            processorFields: $data['processorFields'] ?? [],
+        );
     }
 
     public function reference(): string
@@ -69,7 +82,7 @@ class Transaction extends Entity
         return $this->issuerName;
     }
 
-    public function amount(): AmountConversion
+    public function amount(): ?AmountConversion
     {
         return $this->amount;
     }
@@ -130,7 +143,7 @@ class Transaction extends Entity
 
         if (is_array($data)) {
             foreach ($data as $nvp) {
-                $this->processorFields[] = new NameValuePair($nvp);
+                $this->processorFields[] = $nvp instanceof NameValuePair ? $nvp : NameValuePair::fromArray($nvp);
             }
         }
 

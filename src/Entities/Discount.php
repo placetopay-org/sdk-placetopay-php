@@ -6,15 +6,24 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Discount extends Entity
 {
-    protected string $code;
-    protected string $type;
-    protected float $amount;
-    protected float $base;
-    protected ?float $percent = null;
+    public function __construct(
+        protected string $code = '',
+        protected string $type = '',
+        protected float $amount = 0,
+        protected float $base = 0,
+        protected ?float $percent = null,
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['code', 'type', 'amount', 'base', 'percent']);
+        return new self(
+            code: $data['code'] ?? '',
+            type: $data['type'] ?? '',
+            amount: $data['amount'] ?? 0,
+            base: $data['base'] ?? 0,
+            percent: $data['percent'] ?? null,
+        );
     }
 
     public function code(): string

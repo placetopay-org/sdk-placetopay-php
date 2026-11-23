@@ -49,7 +49,7 @@ class PaymentEntityTest extends BaseTestCase
             ],
             'allowPartial' => true,
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
         $this->assertEquals(1, count($payment->fields()));
         $this->assertEquals($data, $payment->toArray());
 
@@ -73,7 +73,7 @@ class PaymentEntityTest extends BaseTestCase
 
     public function testItParsesCorrectlyTheItems(): void
     {
-        $payment = new Payment([
+        $payment = Payment::fromArray([
             'reference' => 'required',
             'amount' => [
                 'total' => 10000,
@@ -89,7 +89,7 @@ class PaymentEntityTest extends BaseTestCase
                     'sku' => '1234',
                     'name' => 'Testing1',
                 ],
-                new Item([
+                Item::fromArray([
                     'sku' => '1111',
                     'name' => 'Testing2',
                 ]),
@@ -107,7 +107,7 @@ class PaymentEntityTest extends BaseTestCase
 
     public function testItAcceptsNoItems(): void
     {
-        $payment = new Payment([
+        $payment = Payment::fromArray([
             'reference' => 'required',
             'amount' => [
                 'total' => 10000,
@@ -168,7 +168,7 @@ class PaymentEntityTest extends BaseTestCase
             ],
             'subscribe' => true,
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
 
         $this->assertEquals(1, count($payment->fields()));
         $this->assertEquals($data, $payment->toArray());
@@ -190,7 +190,7 @@ class PaymentEntityTest extends BaseTestCase
             'allowPartial' => false,
             'subscribe' => false,
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
 
         $this->assertEmpty($payment->shipping());
     }
@@ -249,7 +249,7 @@ class PaymentEntityTest extends BaseTestCase
             'ipAddress' => '127.0.0.1',
             'userAgent' => 'Testing',
         ];
-        $request = new RedirectRequest($data);
+        $request = RedirectRequest::fromArray($data);
 
         $conversion = [
             'buyer' => [
@@ -324,7 +324,7 @@ class PaymentEntityTest extends BaseTestCase
             ],
         ];
 
-        $payment = new Payment([
+        $payment = Payment::fromArray([
             'modifiers' => [$modifierData],
         ]);
 
@@ -344,7 +344,7 @@ class PaymentEntityTest extends BaseTestCase
             ],
         ];
 
-        $payment = new Payment([
+        $payment = Payment::fromArray([
             'modifiers' => [
                 [
                     'type' => PaymentModifier::TYPE_FEDERAL_GOVERNMENT,
@@ -375,7 +375,7 @@ class PaymentEntityTest extends BaseTestCase
                 'base' => 10.0,
             ],
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
 
         $this->assertArrayNotHasKey('percent', $payment->discount()->toArray());
         $this->assertEquals($data, $payment->toArray());

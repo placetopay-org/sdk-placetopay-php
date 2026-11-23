@@ -9,15 +9,27 @@ class Account extends Entity
 {
     use StatusTrait;
 
-    protected string $bankCode;
-    protected string $bankName;
-    protected string $accountType = '';
-    protected string $accountNumber = '';
+    public function __construct(
+        protected string $bankCode = '',
+        protected string $bankName = '',
+        protected string $accountType = '',
+        protected string $accountNumber = '',
+        ?Status $status = null,
+    ) {
+        if ($status) {
+            $this->status = $status;
+        }
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['bankCode', 'bankName', 'accountType', 'accountNumber']);
-        $this->loadEntity($data['status'] ?? null, 'status', Status::class);
+        return new self(
+            bankCode: $data['bankCode'] ?? '',
+            bankName: $data['bankName'] ?? '',
+            accountType: $data['accountType'] ?? '',
+            accountNumber: $data['accountNumber'] ?? '',
+            status: self::parseEntity($data['status'] ?? null, Status::class),
+        );
     }
 
     public function bankCode(): string

@@ -6,19 +6,33 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class CreditOption extends Entity
 {
-    protected string $code = '';
-    protected string $type = '';
-    protected string $groupCode = '';
-    protected string $description = '';
     /**
      * @var int[]
      */
     protected array $installments = [];
 
-    public function __construct(array $data = [])
+    /**
+     * @param array<int|string> $installments
+     */
+    public function __construct(
+        protected string $code = '',
+        protected string $type = '',
+        protected string $groupCode = '',
+        protected string $description = '',
+        array $installments = [],
+    ) {
+        $this->installments = array_map('intval', $installments);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['code', 'type', 'groupCode', 'description']);
-        $this->installments = array_map('intval', $data['installments'] ?? []);
+        return new self(
+            code: $data['code'] ?? '',
+            type: $data['type'] ?? '',
+            groupCode: $data['groupCode'] ?? '',
+            description: $data['description'] ?? '',
+            installments: $data['installments'] ?? [],
+        );
     }
 
     public function code(): string
@@ -51,12 +65,12 @@ class CreditOption extends Entity
 
     public function toCredit(int $installment): Credit
     {
-        return new Credit([
-            'code' => $this->code(),
-            'type' => $this->type(),
-            'groupCode' => $this->groupCode(),
-            'installment' => $installment,
-        ]);
+        return new Credit(
+            installment: $installment,
+            code: $this->code() !== '' ? $this->code() : null,
+            type: $this->type() !== '' ? $this->type() : null,
+            groupCode: $this->groupCode() !== '' ? $this->groupCode() : null,
+        );
     }
 
     public function toArray(): array

@@ -8,13 +8,20 @@ class PaymentModifier extends Entity
 {
     public const TYPE_FEDERAL_GOVERNMENT = 'FEDERAL_GOVERNMENT';
 
-    protected ?string $type = null;
-    protected ?string $code = null;
-    protected array $additional = [];
+    public function __construct(
+        protected ?string $type = null,
+        protected ?string $code = null,
+        protected array $additional = [],
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['type', 'code', 'additional']);
+        return new self(
+            type: $data['type'] ?? null,
+            code: $data['code'] ?? null,
+            additional: $data['additional'] ?? [],
+        );
     }
 
     public function type(): ?string

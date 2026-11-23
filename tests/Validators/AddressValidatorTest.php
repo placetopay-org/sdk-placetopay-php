@@ -17,7 +17,7 @@ class AddressValidatorTest extends BaseTestCase
             'postalCode' => '050012',
             'phone' => '4442310',
         ];
-        $address = new Address($data);
+        $address = Address::fromArray($data);
         $this->assertEquals($data['street'], $address->street());
         $this->assertEquals($data['city'], $address->city());
         $this->assertEquals($data['country'], $address->country());

@@ -40,7 +40,7 @@ class PlacetoPay
     public function request(mixed $redirectRequest): RedirectResponse
     {
         $redirectRequest = match (true) {
-            is_array($redirectRequest) => new RedirectRequest($redirectRequest),
+            is_array($redirectRequest) => RedirectRequest::fromArray($redirectRequest),
             $redirectRequest instanceof RedirectRequest => $redirectRequest,
             default => throw PlacetoPayException::forDataNotProvided('Wrong class request'),
         };
@@ -66,7 +66,7 @@ class PlacetoPay
     public function collect(mixed $collectRequest): RedirectInformation
     {
         $collectRequest = match (true) {
-            is_array($collectRequest) => new CollectRequest($collectRequest),
+            is_array($collectRequest) => CollectRequest::fromArray($collectRequest),
             $collectRequest instanceof CollectRequest => $collectRequest,
             default => throw new PlacetoPayException('Wrong collect request'),
         };
@@ -76,7 +76,7 @@ class PlacetoPay
 
     public function reverse(int $internalReference, AmountBase|array|null $amount = null): ReverseResponse
     {
-        return $this->settings->carrier()->reverse($internalReference, is_array($amount) ? new AmountBase($amount) : $amount);
+        return $this->settings->carrier()->reverse($internalReference, is_array($amount) ? AmountBase::fromArray($amount) : $amount);
     }
 
     /**
@@ -86,7 +86,7 @@ class PlacetoPay
     public function transaction(mixed $transactionRequest): TransactionResponse
     {
         $transactionRequest = match (true) {
-            is_array($transactionRequest) => new TransactionRequest($transactionRequest),
+            is_array($transactionRequest) => TransactionRequest::fromArray($transactionRequest),
             $transactionRequest instanceof TransactionRequest => $transactionRequest,
             default => throw new PlacetoPayException('Wrong transaction request'),
         };
@@ -163,7 +163,7 @@ class PlacetoPay
 
     public function readNotification(array $data): Notification
     {
-        return new Notification($data, $this->settings->tranKey());
+        return Notification::fromArray($data, $this->settings->tranKey());
     }
 
     /**
@@ -172,7 +172,7 @@ class PlacetoPay
     private function instrumentRequest(mixed $instrumentRequest): InstrumentRequest
     {
         return match (true) {
-            is_array($instrumentRequest) => new InstrumentRequest($instrumentRequest),
+            is_array($instrumentRequest) => InstrumentRequest::fromArray($instrumentRequest),
             $instrumentRequest instanceof InstrumentRequest => $instrumentRequest,
             default => throw new PlacetoPayException('Wrong instrument request'),
         };

@@ -10,12 +10,19 @@ class CancelSessionResponse extends Entity
 {
     use StatusTrait;
 
-    protected ?RedirectInformation $session = null;
+    public function __construct(
+        Status $status,
+        protected ?RedirectInformation $session = null,
+    ) {
+        $this->status = $status;
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->loadEntity($data['status'] ?? null, 'status', Status::class);
-        $this->loadEntity($data['session'] ?? null, 'session', RedirectInformation::class);
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            session: self::parseEntity($data['session'] ?? null, RedirectInformation::class),
+        );
     }
 
     public function session(): ?RedirectInformation

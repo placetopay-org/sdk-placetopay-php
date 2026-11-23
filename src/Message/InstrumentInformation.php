@@ -11,49 +11,66 @@ class InstrumentInformation extends Entity
 {
     use StatusTrait;
 
-    protected string $provider = '';
-    protected string $serviceCode = '';
-    protected string $cardType = '';
-    /**
-     * @var string[]
-     */
-    protected array $cardTypes = [];
-    protected string $threeDS = '';
     /**
      * @var CreditOption[]
      */
     protected array $credits = [];
-    /**
-     * @var array<array{code: string, description: string}>
-     */
-    protected array $pockets = [];
-    /**
-     * @var array<array{code: string, description: string}>
-     */
-    protected array $bankList = [];
-    protected string $zipCodeFormat = '';
-    /**
-     * @var array<string, bool>
-     */
-    protected array $requirements = [];
 
     private const REQUIREMENTS = [
         'displayInterest', 'requireOtp', 'requireCvv2', 'requirePockets', 'requireAvs',
         'accountVerification', 'requirePin', 'requireRedirection',
     ];
 
-    public function __construct(array $data = [])
-    {
-        $this->loadEntity($data['status'] ?? null, 'status', Status::class);
-        $this->load($data, ['provider', 'serviceCode', 'cardType', 'cardTypes', 'threeDS', 'pockets', 'bankList', 'zipCodeFormat']);
-        $this->credits = array_map(fn (array $credit) => new CreditOption($credit), $data['credits'] ?? []);
+    /**
+     * @param string[] $cardTypes
+     * @param array<CreditOption|array> $credits
+     * @param array<array{code: string, description: string}> $pockets
+     * @param array<array{code: string, description: string}> $bankList
+     * @param array<string, bool> $requirements
+     */
+    public function __construct(
+        Status $status,
+        protected string $provider = '',
+        protected string $serviceCode = '',
+        protected string $cardType = '',
+        protected array $cardTypes = [],
+        protected string $threeDS = '',
+        array $credits = [],
+        protected array $pockets = [],
+        protected array $bankList = [],
+        protected string $zipCodeFormat = '',
+        protected array $requirements = [],
+    ) {
+        $this->status = $status;
+        $this->credits = array_map(
+            fn (CreditOption|array $credit) => $credit instanceof CreditOption ? $credit : CreditOption::fromArray($credit),
+            $credits
+        );
+    }
 
+    public static function fromArray(array $data): self
+    {
+        $requirements = [];
         foreach (self::REQUIREMENTS as $requirement) {
             $value = $data[$requirement] ?? $data[str_replace('require', 'requiere', $requirement)] ?? null;
             if ($value !== null) {
-                $this->requirements[$requirement] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                $requirements[$requirement] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
         }
+
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            provider: $data['provider'] ?? '',
+            serviceCode: $data['serviceCode'] ?? '',
+            cardType: $data['cardType'] ?? '',
+            cardTypes: $data['cardTypes'] ?? [],
+            threeDS: $data['threeDS'] ?? '',
+            credits: $data['credits'] ?? [],
+            pockets: $data['pockets'] ?? [],
+            bankList: $data['bankList'] ?? [],
+            zipCodeFormat: $data['zipCodeFormat'] ?? '',
+            requirements: $requirements,
+        );
     }
 
     public function provider(): string

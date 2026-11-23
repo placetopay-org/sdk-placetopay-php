@@ -11,15 +11,25 @@ class TokenInformation extends Entity
 {
     use StatusTrait;
 
-    protected ?int $id = null;
-    protected string $type = '';
-    protected ?Token $token = null;
+    public function __construct(
+        Status $status,
+        protected ?int $id = null,
+        protected string $type = '',
+        protected ?Token $token = null,
+    ) {
+        $this->status = $status;
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->loadEntity($data['status'] ?? null, 'status', Status::class);
-        $this->load($data['data'] ?? null, ['id', 'type']);
-        $this->loadEntity($data['data'] ?? null, 'token', Token::class);
+        $information = is_array($data['data'] ?? null) ? $data['data'] : [];
+
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            id: $information['id'] ?? null,
+            type: $information['type'] ?? '',
+            token: self::parseEntity($information, Token::class),
+        );
     }
 
     public function id(): ?int

@@ -81,7 +81,7 @@ class ServiceReverseTest extends BaseTestCase
 
     public function testItAcceptsTheAmountAsAnEntity()
     {
-        $this->getService()->reverse(1519097768, new AmountBase(['currency' => 'USD', 'total' => 12.5]));
+        $this->getService()->reverse(1519097768, AmountBase::fromArray(['currency' => 'USD', 'total' => 12.5]));
 
         $this->assertEquals(['currency' => 'USD', 'total' => 12.5], RestCarrierMock::instance()->parameters()['amount']);
     }

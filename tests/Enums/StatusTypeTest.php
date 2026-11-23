@@ -10,10 +10,10 @@ class StatusTypeTest extends BaseTestCase
 {
     public function testItResolvesUnknownStatusesFromTheService()
     {
-        $this->assertSame(StatusType::APPROVED, StatusType::fromService('APPROVED'));
-        $this->assertSame(StatusType::UNKNOWN, StatusType::fromService('SOMETHING_NEW'));
-        $this->assertSame(StatusType::PENDING_CONFIRMATION, StatusType::fromService('PENDING_CONFIRMATION'));
-        $this->assertSame(StatusType::PARTIAL_EXPIRED, StatusType::fromService('PARTIAL_EXPIRED'));
+        $this->assertSame(StatusType::APPROVED, StatusType::fromName('APPROVED'));
+        $this->assertSame(StatusType::UNKNOWN, StatusType::fromName('SOMETHING_NEW'));
+        $this->assertSame(StatusType::PENDING_CONFIRMATION, StatusType::fromName('PENDING_CONFIRMATION'));
+        $this->assertSame(StatusType::PARTIAL_EXPIRED, StatusType::fromName('PARTIAL_EXPIRED'));
     }
 
     public function testTheStatusEntityExposesItsType()
@@ -23,6 +23,6 @@ class StatusTypeTest extends BaseTestCase
         $this->assertSame(StatusType::REJECTED, $status->type());
         $this->assertSame('REJECTED', $status->status());
         $this->assertTrue($status->isRejected());
-        $this->assertSame(StatusType::ERROR, (new Status([]))->type());
+        $this->assertSame(StatusType::ERROR, (Status::fromArray([]))->type());
     }
 }

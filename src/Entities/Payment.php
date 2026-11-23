@@ -9,43 +9,65 @@ class Payment extends Entity
 {
     use FieldsTrait;
 
-    protected string $reference;
-    protected string $description = '';
-    protected ?Amount $amount = null;
-    protected bool $allowPartial = false;
-    protected ?Person $shipping = null;
     /**
      * @var Item[]
      */
     protected array $items = [];
-    protected ?Recurring $recurring = null;
-    protected ?Discount $discount = null;
-    protected ?Instrument $instrument = null;
-    public bool $subscribe = false;
-    protected ?int $agreement = null;
-    protected string $agreementType = '';
 
     /** @var PaymentModifier[] */
     protected array $modifiers = [];
 
-    public function __construct(array $data = [])
+    /**
+     * @param array<Item|array> $items
+     * @param array<NameValuePair|array> $fields
+     * @param array<PaymentModifier|array> $modifiers
+     */
+    public function __construct(
+        protected string $reference = '',
+        protected string $description = '',
+        protected ?Amount $amount = null,
+        protected bool $allowPartial = false,
+        protected ?Person $shipping = null,
+        array $items = [],
+        protected ?Recurring $recurring = null,
+        protected ?Discount $discount = null,
+        protected ?Instrument $instrument = null,
+        public bool $subscribe = false,
+        protected ?int $agreement = null,
+        protected string $agreementType = '',
+        array $fields = [],
+        array $modifiers = [],
+    ) {
+        $this->setItems($items);
+        $this->setFields($fields);
+        $this->setModifiers($modifiers);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['reference', 'description', 'allowPartial', 'subscribe', 'agreement', 'agreementType']);
+        return new self(...self::attributesFromArray($data));
+    }
 
-        $this->loadEntity($data['amount'] ?? null, 'amount', Amount::class);
-        $this->loadEntity($data['recurring'] ?? null, 'recurring', Recurring::class);
-        $this->loadEntity($data['shipping'] ?? null, 'shipping', Person::class);
-        $this->loadEntity($data['discount'] ?? null, 'discount', Discount::class);
-
-        if (isset($data['items'])) {
-            $this->setItems($data['items']);
-        }
-        if (isset($data['fields'])) {
-            $this->setFields($data['fields']);
-        }
-        if (isset($data['modifiers']) && is_array($data['modifiers'])) {
-            $this->setModifiers($data['modifiers']);
-        }
+    /**
+     * Maps the service representation of a payment to the constructor arguments.
+     */
+    protected static function attributesFromArray(array $data): array
+    {
+        return [
+            'reference' => $data['reference'] ?? '',
+            'description' => $data['description'] ?? '',
+            'amount' => self::parseEntity($data['amount'] ?? null, Amount::class),
+            'allowPartial' => $data['allowPartial'] ?? false,
+            'shipping' => self::parseEntity($data['shipping'] ?? null, Person::class),
+            'items' => $data['items'] ?? [],
+            'recurring' => self::parseEntity($data['recurring'] ?? null, Recurring::class),
+            'discount' => self::parseEntity($data['discount'] ?? null, Discount::class),
+            'subscribe' => $data['subscribe'] ?? false,
+            'agreement' => $data['agreement'] ?? null,
+            'agreementType' => $data['agreementType'] ?? '',
+            'fields' => $data['fields'] ?? [],
+            'modifiers' => is_array($data['modifiers'] ?? null) ? $data['modifiers'] : [],
+        ];
     }
 
     public function reference(): string
@@ -121,7 +143,7 @@ class Payment extends Entity
     public function setItems(array $items): self
     {
         $this->items = array_map(
-            fn (Item|array $data) => is_array($data) ? new Item($data) : $data,
+            fn (Item|array $data) => is_array($data) ? Item::fromArray($data) : $data,
             $items['item'] ?? $items
         );
 
@@ -158,7 +180,7 @@ class Payment extends Entity
     public function addModifier(mixed $modifier): self
     {
         if (is_array($modifier)) {
-            $modifier = new PaymentModifier($modifier);
+            $modifier = PaymentModifier::fromArray($modifier);
         }
 
         if ($modifier instanceof PaymentModifier) {

@@ -18,7 +18,7 @@ class PaymentValidatorTest extends BaseTestCase
             ],
             'allowPartial' => true,
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
         $this->assertEquals($data['reference'], $payment->reference());
         $this->assertEquals($data['allowPartial'], $payment->allowPartial());
 
@@ -66,7 +66,7 @@ class PaymentValidatorTest extends BaseTestCase
             'allowPartial' => true,
         ];
 
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
         $this->assertEquals($data['reference'], $payment->reference());
         $this->assertEquals($data['amount']['total'], $payment->amount()->total());
         $this->assertEquals($data['recurring']['periodicity'], $payment->recurring()->periodicity());
@@ -87,10 +87,10 @@ class PaymentValidatorTest extends BaseTestCase
             ],
             'allowPartial' => true,
         ];
-        $payment = new Payment($data);
+        $payment = Payment::fromArray($data);
         $this->assertEquals($data['reference'], $payment->reference());
         $this->assertEquals($data['description'], $payment->description());
-        $this->assertEquals(new Amount($data['amount']), $payment->amount());
+        $this->assertEquals(Amount::fromArray($data['amount']), $payment->amount());
 
         $this->assertEquals($data, $payment->toArray());
     }

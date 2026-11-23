@@ -22,7 +22,7 @@ class PersonValidatorTest extends BaseTestCase
                 'country' => 'CO',
             ],
         ];
-        $person = new Person($data);
+        $person = Person::fromArray($data);
         $this->assertEquals($data['name'], $person->name());
         $this->assertEquals($data['surname'], $person->surname());
         $this->assertEquals($data['email'], $person->email());
@@ -49,7 +49,7 @@ class PersonValidatorTest extends BaseTestCase
             'documentType' => 'CC',
             'company' => 'Acme S.A.S.',
         ];
-        $person = new Person($data);
+        $person = Person::fromArray($data);
         $this->assertEquals($data['name'], $person->name());
     }
 }

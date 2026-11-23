@@ -9,24 +9,29 @@ use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 
 class TransactionRequest extends Entity
 {
-    protected int $internalReference;
-    protected TransactionAction $action;
-    protected ?AmountBase $amount = null;
+    public function __construct(
+        protected int $internalReference,
+        protected TransactionAction $action,
+        protected ?AmountBase $amount = null,
+    ) {
+    }
 
     /**
      * @throws PlacetoPayException
      */
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
         if (!isset($data['internalReference'], $data['action'])) {
             throw PlacetoPayException::forDataNotProvided('The internalReference and the action are required');
         }
 
-        $this->internalReference = $data['internalReference'];
-        $this->action = $data['action'] instanceof TransactionAction
-            ? $data['action']
-            : TransactionAction::tryFrom($data['action']) ?? throw PlacetoPayException::forDataNotProvided('Unknown transaction action ' . $data['action']);
-        $this->loadEntity($data['amount'] ?? null, 'amount', AmountBase::class);
+        return new self(
+            internalReference: $data['internalReference'],
+            action: $data['action'] instanceof TransactionAction
+                ? $data['action']
+                : TransactionAction::tryFrom($data['action']) ?? throw PlacetoPayException::forDataNotProvided('Unknown transaction action ' . $data['action']),
+            amount: self::parseEntity($data['amount'] ?? null, AmountBase::class),
+        );
     }
 
     public function internalReference(): int

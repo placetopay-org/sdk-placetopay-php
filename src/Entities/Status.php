@@ -7,24 +7,32 @@ use PlacetoPay\PlacetoPaySdk\Enums\StatusType;
 
 class Status extends Entity
 {
-    protected string $status;
-    protected string $reason = '';
-    protected string $message = '';
-    protected string $date = '';
+    public function __construct(
+        protected string $status = 'ERROR',
+        protected string $reason = '',
+        protected string $message = '',
+        protected string $date = '',
+    ) {
+    }
 
-    public function __construct(array $data)
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['status', 'reason', 'message', 'date']);
+        return new self(
+            status: $data['status'] ?? StatusType::ERROR->value,
+            reason: $data['reason'] ?? '',
+            message: $data['message'] ?? '',
+            date: $data['date'] ?? '',
+        );
     }
 
     public function status(): string
     {
-        return $this->status ?? StatusType::ERROR->value;
+        return $this->status;
     }
 
     public function type(): StatusType
     {
-        return StatusType::fromService($this->status());
+        return StatusType::fromName($this->status());
     }
 
     public function reason(): string
@@ -74,11 +82,11 @@ class Status extends Entity
 
     public static function quick(StatusType|string $status, string $reason, string $message = '', string $date = ''): self
     {
-        return new self([
-            'status' => $status instanceof StatusType ? $status->value : $status,
-            'reason' => $reason,
-            'message' => $message,
-            'date' => $date ?: date('c'),
-        ]);
+        return new self(
+            status: $status instanceof StatusType ? $status->value : $status,
+            reason: $reason,
+            message: $message,
+            date: $date ?: date('c'),
+        );
     }
 }

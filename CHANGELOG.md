@@ -1,6 +1,10 @@
 ## Changelog
 
 [Unreleased]
+- Update the SDK to PHP 8.1, see the upgrading guide in the README for the breaking changes.
+- Entities use PHP 8 constructors with promoted properties and a `fromArray()` factory, `LoaderTrait` was removed.
+- Add the `StatusType` and `DocumentType` enums, `StatusType::fromName()` resolves unknown statuses to `UNKNOWN`.
+- Reverse uses the `api/transaction` endpoint.
 
 ### Added
 - `cancelSession()`: `POST /api/session/{requestId}/cancel`.
@@ -20,7 +24,7 @@
 - `Carrier` declares the new operations, custom carriers must implement them.
 - `Status::reason()` returns `''` when the service sends `null` instead of failing.
 - `Token::installments()` returns `?int` and the token only sends `installments` when it was requested, as an integer. Before it always sent `"0"`.
-- `Credit` has defaults (`installment` is 1) instead of failing when a field is missing, and omits the empty ones.
+- `Credit` uses `null` for the missing `code`, `type` and `groupCode` and omits them, `installment` is 1 when it is not provided. Add `Credit::oneInstallment()`.
 - The tranKey is digested with sha256 by default, as the authentication documentation defines it. Before it was always sha1; pass `'algorithm' => 'sha1'` to keep it.
 - The `api/gateway/*` requests (`instrumentInformation()`, `tokenInformation()`) always use sha256, the service rejects sha1 there with "Autenticación fallida 102".
 - `Notification` validates the `sha256:` prefixed signatures. Before only the deprecated sha1 ones were valid, so every sha256 notification was rejected.

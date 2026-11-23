@@ -7,25 +7,31 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 class Recurring extends Entity
 {
     /**
-     * Frequency to resubmit the transaction.
-     * Y = annual  M = monthly  D = daily.
-     * @var string
+     * @param string $periodicity Frequency to resubmit the transaction. Y = annual  M = monthly  D = daily.
+     * @param int|null $maxPeriods Depends on the number of times that it makes the charge, corresponds to maximum
+     *                             times that the recurrence will happen. If you do not want to set up should
+     *                             indicated -1. You must specify this parameter or dueDate.
      */
-    protected string $periodicity;
-    protected int $interval;
-    protected string $nextPayment = '';
-    /**
-     * Depends on the number of times that it makes the charge, corresponds to maximum times that the recurrence
-     * will happen. If you do not want to set up should indicated -1.
-     * You must specify this parameter or dueDate.
-     */
-    protected ?int $maxPeriods = null;
-    protected string $dueDate = '';
-    protected string $notificationUrl = '';
+    public function __construct(
+        protected string $periodicity = '',
+        protected int $interval = 0,
+        protected string $nextPayment = '',
+        protected ?int $maxPeriods = null,
+        protected string $dueDate = '',
+        protected string $notificationUrl = '',
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['periodicity', 'interval', 'maxPeriods', 'nextPayment', 'dueDate', 'notificationUrl']);
+        return new self(
+            periodicity: $data['periodicity'] ?? '',
+            interval: $data['interval'] ?? 0,
+            nextPayment: $data['nextPayment'] ?? '',
+            maxPeriods: $data['maxPeriods'] ?? null,
+            dueDate: $data['dueDate'] ?? '',
+            notificationUrl: $data['notificationUrl'] ?? '',
+        );
     }
 
     public function periodicity(): string

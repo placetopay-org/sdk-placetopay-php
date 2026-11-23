@@ -12,27 +12,34 @@ class RedirectInformation extends Entity
 {
     use StatusTrait;
 
-    protected ?int $requestId;
-    protected ?RedirectRequest $request = null;
     /**
      * @var Transaction[]
      */
     protected array $payment = [];
-    protected ?SubscriptionInformation $subscription = null;
 
-    public function __construct(array $data = [])
+    /**
+     * @param array<Transaction|array> $payment
+     */
+    public function __construct(
+        Status $status,
+        protected ?int $requestId = null,
+        protected ?RedirectRequest $request = null,
+        array $payment = [],
+        protected ?SubscriptionInformation $subscription = null,
+    ) {
+        $this->status = $status;
+        $this->setPayment($payment);
+    }
+
+    public static function fromArray(array $data): self
     {
-        $this->requestId = $data['requestId'] ?? null;
-        $this->loadEntity($data['status'], 'status', Status::class);
-        $this->loadEntity($data['request'] ?? null, 'request', RedirectRequest::class);
-
-        if (isset($data['payment'])) {
-            $this->setPayment($data['payment']);
-        }
-
-        if (isset($data['subscription'])) {
-            $this->setSubscription($data['subscription']);
-        }
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            requestId: $data['requestId'] ?? null,
+            request: self::parseEntity($data['request'] ?? null, RedirectRequest::class),
+            payment: $data['payment'] ?? [],
+            subscription: self::parseEntity($data['subscription'] ?? null, SubscriptionInformation::class),
+        );
     }
 
     public function requestId(): ?int
@@ -65,7 +72,7 @@ class RedirectInformation extends Entity
 
             $payments = ($payments['transaction'] ?? null) ?: $payments;
             foreach ($payments as $payment) {
-                $this->payment[] = new Transaction($payment);
+                $this->payment[] = $payment instanceof Transaction ? $payment : Transaction::fromArray($payment);
             }
         }
         return $this;
@@ -73,7 +80,7 @@ class RedirectInformation extends Entity
 
     public function setSubscription(SubscriptionInformation|array|null $subscription): self
     {
-        $this->loadEntity($subscription, 'subscription', SubscriptionInformation::class);
+        $this->subscription = self::parseEntity($subscription, SubscriptionInformation::class);
         return $this;
     }
 

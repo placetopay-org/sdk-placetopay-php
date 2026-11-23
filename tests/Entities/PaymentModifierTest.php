@@ -11,7 +11,7 @@ class PaymentModifierTest extends BaseTestCase
 
     public function testItCanCreateAPaymentModifier(): void
     {
-        $modifier = new PaymentModifier($this->data);
+        $modifier = PaymentModifier::fromArray($this->data);
 
         $this->assertInstanceOf(PaymentModifier::class, $modifier);
         $this->assertEquals($this->data, $modifier->toArray());
@@ -39,7 +39,7 @@ class PaymentModifierTest extends BaseTestCase
 
     public function testItCanMergeAPaymentModifierAdditional(): void
     {
-        $modifier = new PaymentModifier($this->data);
+        $modifier = PaymentModifier::fromArray($this->data);
 
         $modifier->mergeAdditional([
             'law' => '18999',

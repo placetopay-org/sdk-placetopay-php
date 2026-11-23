@@ -68,69 +68,69 @@ class RestCarrier extends Carrier
 
     public function request(RedirectRequest $redirectRequest): RedirectResponse
     {
-        return new RedirectResponse(
+        return RedirectResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/session'), $redirectRequest->toArray())
         );
     }
 
     public function query(int $requestId): RedirectInformation
     {
-        return new RedirectInformation(
+        return RedirectInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/session/' . $requestId), [])
         );
     }
 
     public function cancelSession(int $requestId): CancelSessionResponse
     {
-        return new CancelSessionResponse(
+        return CancelSessionResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/session/' . $requestId . '/cancel'), [])
         );
     }
 
     public function collect(CollectRequest $collectRequest): RedirectInformation
     {
-        return new RedirectInformation(
+        return RedirectInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/collect'), $collectRequest->toArray())
         );
     }
 
     public function reverse(int $internalReference, ?AmountBase $amount = null): ReverseResponse
     {
-        $transactionRequest = new TransactionRequest([
-            'internalReference' => $internalReference,
-            'action' => TransactionAction::REVERSE,
-            'amount' => $amount,
-        ]);
+        $transactionRequest = new TransactionRequest(
+            internalReference: $internalReference,
+            action: TransactionAction::REVERSE,
+            amount: $amount,
+        );
 
-        return new ReverseResponse(
+        return ReverseResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/transaction'), $transactionRequest->toArray())
         );
     }
 
     public function transaction(TransactionRequest $transactionRequest): TransactionResponse
     {
-        return new TransactionResponse(
+        return TransactionResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/transaction'), $transactionRequest->toArray())
         );
     }
 
     public function invalidateToken(InstrumentRequest $instrumentRequest): StatusResponse
     {
-        return new StatusResponse(
+        return StatusResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/instrument/invalidate'), $instrumentRequest->toArray())
         );
     }
 
     public function instrumentInformation(InstrumentRequest $instrumentRequest): InstrumentInformation
     {
-        return new InstrumentInformation(
+        return InstrumentInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/gateway/information'), $instrumentRequest->toArray(), self::GATEWAY_ALGORITHM)
         );
     }
 
     public function tokenInformation(InstrumentRequest $instrumentRequest): TokenInformation
     {
-        return new TokenInformation(
+        return TokenInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/gateway/token'), $instrumentRequest->toArray(), self::GATEWAY_ALGORITHM)
         );
     }

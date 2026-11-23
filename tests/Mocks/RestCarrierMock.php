@@ -108,7 +108,7 @@ class RestCarrierMock
 
     private function createSession(): FulfilledPromise
     {
-        $request = new RedirectRequest($this->parameters());
+        $request = RedirectRequest::fromArray($this->parameters());
 
         $requestId = time();
         if (preg_match('/_(\d+)$/', $request->reference(), $matches)) {
@@ -128,7 +128,7 @@ class RestCarrierMock
 
     private function collect(): FulfilledPromise
     {
-        $request = new RedirectRequest($this->parameters());
+        $request = RedirectRequest::fromArray($this->parameters());
 
         $requestId = time();
         if (preg_match('/_(\d+)$/', $request->reference(), $matches)) {

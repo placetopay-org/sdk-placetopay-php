@@ -57,28 +57,28 @@ class RestCarrier extends Carrier
 
     public function request(RedirectRequest $redirectRequest): RedirectResponse
     {
-        return new RedirectResponse(
+        return RedirectResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/session'), $redirectRequest->toArray())
         );
     }
 
     public function query(int $requestId): RedirectInformation
     {
-        return new RedirectInformation(
+        return RedirectInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/session/' . $requestId), [])
         );
     }
 
     public function collect(CollectRequest $collectRequest): RedirectInformation
     {
-        return new RedirectInformation(
+        return RedirectInformation::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/collect'), $collectRequest->toArray())
         );
     }
 
     public function reverse(int $internalReference): ReverseResponse
     {
-        return new ReverseResponse(
+        return ReverseResponse::fromArray(
             $this->makeRequest($this->settings->baseUrl('api/transaction'), [
                 'internalReference' => $internalReference,
                 'action' => 'reverse',

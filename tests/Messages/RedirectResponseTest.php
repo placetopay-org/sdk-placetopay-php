@@ -11,7 +11,7 @@ class RedirectResponseTest extends BaseTestCase
 {
     public function testRedirectionResponse()
     {
-        $carrierResponse = new RedirectResponse([
+        $carrierResponse = RedirectResponse::fromArray([
             'status' => Status::quick(StatusType::OK, '00'),
             'requestId' => rand(0, 100000),
             'processUrl' => 'http://localhost/payment/process',
@@ -22,7 +22,7 @@ class RedirectResponseTest extends BaseTestCase
 
     public function testRedirectionResponseWithStatus()
     {
-        $carrierResponse = new RedirectResponse([
+        $carrierResponse = RedirectResponse::fromArray([
             'requestId' => rand(0, 100000),
             'processUrl' => 'http://localhost/payment/process',
             'status' => [

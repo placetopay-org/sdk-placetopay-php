@@ -21,7 +21,7 @@ class DocumentTypeTest extends BaseTestCase
         $this->assertTrue(DocumentType::NIT->isBusiness());
         $this->assertFalse(DocumentType::CC->isBusiness());
         $this->assertSame(['NIT', 'RUT', 'RUC', 'CLRUT'], DocumentHelper::businessDocument());
-        $this->assertTrue((new Person(['documentType' => 'RUC']))->isBusiness());
-        $this->assertFalse((new Person(['documentType' => 'NOT_EXISTS']))->isBusiness());
+        $this->assertTrue((Person::fromArray(['documentType' => 'RUC']))->isBusiness());
+        $this->assertFalse((Person::fromArray(['documentType' => 'NOT_EXISTS']))->isBusiness());
     }
 }

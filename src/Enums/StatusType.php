@@ -16,10 +16,10 @@ enum StatusType: string
     case UNKNOWN = 'UNKNOWN';
 
     /**
-     * Resolves a status as returned by the service, any value not recognized maps to UNKNOWN.
+     * Resolves a status by its name, any value not recognized maps to UNKNOWN.
      */
-    public static function fromService(string $status): self
+    public static function fromName(string $name): self
     {
-        return self::tryFrom($status) ?? self::UNKNOWN;
+        return self::tryFrom($name) ?? self::UNKNOWN;
     }
 }

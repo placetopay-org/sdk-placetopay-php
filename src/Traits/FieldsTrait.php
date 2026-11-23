@@ -53,7 +53,7 @@ trait FieldsTrait
     public function addField(mixed $nvp): static
     {
         if (is_array($nvp)) {
-            $nvp = new NameValuePair($nvp);
+            $nvp = NameValuePair::fromArray($nvp);
         }
 
         if ($nvp instanceof NameValuePair) {

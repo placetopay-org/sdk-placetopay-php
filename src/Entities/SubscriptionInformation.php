@@ -10,22 +10,30 @@ class SubscriptionInformation extends Entity
     use StatusTrait;
 
     /**
-     * The type of this subscription could be token or account for the time being.
-     */
-    protected string $type;
-    /**
      * @var NameValuePair[]
      */
     protected array $instrument = [];
 
-    public function __construct(array $data)
-    {
-        $this->type = $data['type'] ?? '';
-        $this->loadEntity($data['status'], 'status', Status::class);
+    /**
+     * @param string $type The type of this subscription could be token or account for the time being.
+     * @param array<NameValuePair|array> $instrument
+     */
+    public function __construct(
+        Status $status,
+        protected string $type = '',
+        array $instrument = [],
+    ) {
+        $this->status = $status;
+        $this->setInstrument($instrument);
+    }
 
-        if (isset($data['instrument'])) {
-            $this->setInstrument($data['instrument']);
-        }
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            status: self::parseEntity($data['status'] ?? null, Status::class) ?? new Status(),
+            type: $data['type'] ?? '',
+            instrument: $data['instrument'] ?? [],
+        );
     }
 
     public function type(): string
@@ -46,7 +54,7 @@ class SubscriptionInformation extends Entity
         $this->instrument = [];
         foreach ($instrumentData['item'] ?? $instrumentData as $nvp) {
             if (is_array($nvp)) {
-                $nvp = new NameValuePair($nvp);
+                $nvp = NameValuePair::fromArray($nvp);
             }
 
             if ($nvp instanceof NameValuePair) {
@@ -80,8 +88,8 @@ class SubscriptionInformation extends Entity
         }
 
         return match ($this->type()) {
-            'token' => new Token($data),
-            'account' => new Account($data),
+            'token' => Token::fromArray($data),
+            'account' => Account::fromArray($data),
             default => null,
         };
     }

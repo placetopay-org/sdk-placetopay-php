@@ -3,36 +3,36 @@
 namespace PlacetoPay\PlacetoPaySdk\Message;
 
 use PlacetoPay\PlacetoPaySdk\Entities\Instrument;
-use PlacetoPay\PlacetoPaySdk\Entities\Person;
 use PlacetoPay\PlacetoPaySdk\Exceptions\PlacetoPayException;
 
 class CollectRequest extends RedirectRequest
 {
-    protected Instrument $instrument;
-
-    protected string $returnUrl = '';
-    protected string $ipAddress = '';
-    protected string $userAgent = '';
-    protected ?string $provider = null;
-
     /**
+     * @param mixed ...$request named arguments accepted by RedirectRequest::__construct, payer is required
      * @throws PlacetoPayException
      */
-    public function __construct(array $data = [])
-    {
-        parent::__construct($data);
+    public function __construct(
+        protected Instrument $instrument,
+        protected ?string $provider = null,
+        mixed ...$request,
+    ) {
+        parent::__construct(...$request);
 
         if (!$this->payer) {
             throw PlacetoPayException::forDataNotProvided('The payer is required to collect');
         }
-
-        $this->loadEntity($data['instrument'], 'instrument', Instrument::class);
-        $this->provider = $data['provider'] ?? null;
     }
 
-    public function payer(): Person
+    /**
+     * @throws PlacetoPayException
+     */
+    public static function fromArray(array $data): self
     {
-        return $this->payer;
+        return new self(...[
+            ...self::attributesFromArray($data),
+            'instrument' => self::parseEntity($data['instrument'] ?? null, Instrument::class) ?? new Instrument(),
+            'provider' => $data['provider'] ?? null,
+        ]);
     }
 
     public function provider(): ?string
@@ -48,7 +48,7 @@ class CollectRequest extends RedirectRequest
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'instrument' => $this->instrument()?->toArray(),
+            'instrument' => $this->instrument()->toArray(),
             'provider' => $this->provider(),
         ]);
     }

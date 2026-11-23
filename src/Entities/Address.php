@@ -6,16 +6,26 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Address extends Entity
 {
-    protected string $street = '';
-    protected string $city = '';
-    protected string $state = '';
-    protected string $postalCode = '';
-    protected string $country = '';
-    protected string $phone = '';
+    public function __construct(
+        protected string $street = '',
+        protected string $city = '',
+        protected string $state = '',
+        protected string $postalCode = '',
+        protected string $country = '',
+        protected string $phone = '',
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['street', 'city', 'state', 'postalCode', 'phone', 'country']);
+        return new self(
+            street: $data['street'] ?? '',
+            city: $data['city'] ?? '',
+            state: $data['state'] ?? '',
+            postalCode: $data['postalCode'] ?? '',
+            country: $data['country'] ?? '',
+            phone: $data['phone'] ?? '',
+        );
     }
 
     public function street(): string

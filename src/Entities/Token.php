@@ -6,20 +6,35 @@ use PlacetoPay\PlacetoPaySdk\Contracts\Entity;
 
 class Token extends Entity
 {
-    protected string $token = '';
-    protected string $subtoken = '';
-    protected string $franchise = '';
-    protected string $franchiseName = '';
-    protected string $issuerName = '';
-    protected string $lastDigits = '';
-    protected string $validUntil = '';
-    // Just in case the token will be utilized
-    protected string $cvv = '';
-    protected int $installments = 0;
+    /**
+     * @param string $cvv Just in case the token will be utilized
+     */
+    public function __construct(
+        protected string $token = '',
+        protected string $subtoken = '',
+        protected string $franchise = '',
+        protected string $franchiseName = '',
+        protected string $issuerName = '',
+        protected string $lastDigits = '',
+        protected string $validUntil = '',
+        protected string $cvv = '',
+        protected int $installments = 0,
+    ) {
+    }
 
-    public function __construct(array $data = [])
+    public static function fromArray(array $data): self
     {
-        $this->load($data, ['token', 'subtoken', 'franchise', 'franchiseName', 'issuerName', 'lastDigits', 'validUntil', 'cvv', 'installments']);
+        return new self(
+            token: $data['token'] ?? '',
+            subtoken: $data['subtoken'] ?? '',
+            franchise: $data['franchise'] ?? '',
+            franchiseName: $data['franchiseName'] ?? '',
+            issuerName: $data['issuerName'] ?? '',
+            lastDigits: $data['lastDigits'] ?? '',
+            validUntil: $data['validUntil'] ?? '',
+            cvv: $data['cvv'] ?? '',
+            installments: $data['installments'] ?? 0,
+        );
     }
 
     public function token(): string

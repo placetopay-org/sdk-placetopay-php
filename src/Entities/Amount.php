@@ -31,15 +31,30 @@ class Amount extends AmountBase
     protected float $airline;
     protected float $interest;
 
-    public function __construct(array $data = [])
+    /**
+     * @param array<TaxDetail|array> $taxes
+     * @param array<AmountDetail|array> $details
+     */
+    public function __construct(
+        string $currency = 'COP',
+        float $total = 0,
+        array $taxes = [],
+        array $details = [],
+    ) {
+        parent::__construct($currency, $total);
+
+        $this->setTaxes($taxes);
+        $this->setDetails($details);
+    }
+
+    public static function fromArray(array $data): self
     {
-        parent::__construct($data);
-        if (isset($data['taxes'])) {
-            $this->setTaxes($data['taxes']);
-        }
-        if (isset($data['details'])) {
-            $this->setDetails($data['details']);
-        }
+        return new self(
+            currency: $data['currency'] ?? 'COP',
+            total: $data['total'] ?? 0,
+            taxes: $data['taxes'] ?? [],
+            details: $data['details'] ?? [],
+        );
     }
 
     /**
@@ -63,7 +78,7 @@ class Amount extends AmountBase
      */
     public function setTaxes(array $taxes): static
     {
-        $this->taxes = array_map(fn (TaxDetail|array $tax) => is_array($tax) ? new TaxDetail($tax) : $tax, $taxes);
+        $this->taxes = array_map(fn (TaxDetail|array $tax) => is_array($tax) ? TaxDetail::fromArray($tax) : $tax, $taxes);
 
         return $this;
     }
@@ -76,7 +91,7 @@ class Amount extends AmountBase
         $this->details = [];
         foreach ($details as $detail) {
             if (is_array($detail)) {
-                $detail = new AmountDetail($detail);
+                $detail = AmountDetail::fromArray($detail);
             }
 
             $this->{$detail->kind()} = $detail->amount();

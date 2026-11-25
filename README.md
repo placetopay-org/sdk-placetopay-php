@@ -30,8 +30,11 @@ $placetopay = new PlacetoPay\PlacetoPaySdk\PlacetoPay([
     'tranKey' => 'YOUR_TRANSACTIONAL_KEY', // Provided by PlacetoPay
     'baseUrl' => 'https://THE_BASE_URL_TO_POINT_AT',
     'timeout' => 10, // (optional) 15 by default
+    'algorithm' => 'sha256', // (optional) tranKey digest, sha256 by default as documented, sha1 is still accepted by Checkout
 ]);
 ```
+
+The `api/gateway/*` operations (`tokenInformation()`, `instrumentInformation()`) always digest with sha256, the service rejects sha1 there.
 
 ### Creating a new Payment Request to obtain a Session Payment URL
 
@@ -82,6 +85,88 @@ if ($response->isSuccessful()) {
 }
 ```
 
+### Refund a transaction
+
+Without an amount the whole transaction is refunded, with one only that part.
+
+```php
+$placetopay->reverse($internalReference);
+$placetopay->reverse($internalReference, ['currency' => 'COP', 'total' => 3000]);
+```
+
+### Cancel a session
+
+Cancels a session the user has not completed, its status changes to `REJECTED`.
+
+```php
+$response = $placetopay->cancelSession($requestId);
+
+if ($response->isSuccessful()) {
+    $response->session()->status()->status(); // REJECTED
+}
+```
+
+### Preauthorization (checkin, reauthorization and checkout)
+
+Create the session with `type` set to `checkin`; once approved, the funds are held and the transaction can be adjusted or captured with its `internalReference`.
+
+```php
+$response = $placetopay->request([
+    'type' => 'checkin',
+    'payment' => ['reference' => $reference, 'description' => 'Hotel', 'amount' => ['currency' => 'USD', 'total' => 500]],
+    // returnUrl, ipAddress, userAgent...
+]);
+
+// Adjust the held amount
+$placetopay->reauthorize($internalReference, ['currency' => 'USD', 'total' => 700]);
+
+// Capture it, a total of 0 releases the held funds
+$response = $placetopay->checkout($internalReference, ['currency' => 'USD', 'total' => 650]);
+$response->isApproved();
+$response->payment(); // The resulting transaction
+```
+
+### Confirm or cancel a transaction
+
+Sessions created with `'metadata' => ['requiresConfirmation' => true]` leave the transaction in `PENDING_CONFIRMATION` until the merchant decides.
+
+```php
+$placetopay->confirm($internalReference);
+$placetopay->cancelTransaction($internalReference);
+```
+
+Every transaction action, including `reverse`, can also be sent with `$placetopay->transaction(['internalReference' => 123, 'action' => 'checkout', 'amount' => [...]])`, see `PlacetoPay\PlacetoPaySdk\Enums\TransactionAction`.
+
+### Tokens
+
+Use the token (or subtoken) obtained in a subscription session.
+
+```php
+$instrument = ['instrument' => ['token' => ['token' => $token]]];
+
+// Franchise, last digits, bin, expiration and owner
+$information = $placetopay->tokenInformation($instrument);
+$information->token()->bin();
+
+// Card type, credits and installments available to pay with the token
+$information = $placetopay->instrumentInformation($instrument);
+foreach ($information->credits() as $credit) {
+    $credit->installments(); // [1, 2, 3, ...]
+}
+
+// Charge with the chosen credit and installments, without them a single installment is charged
+$placetopay->collect([
+    // payer, payment, ipAddress, userAgent...
+    'instrument' => [
+        'token' => ['token' => $token],
+        'credit' => $information->credits()[0]->toCredit(3),
+    ],
+]);
+
+// The token can no longer be used
+$placetopay->invalidateToken($instrument)->isSuccessful();
+```
+
 ## Upgrading to the PHP 8.1 version
 
 This version requires **PHP 8.1 or higher** and introduces the following breaking changes. Integrations that only use
@@ -114,6 +199,8 @@ $request = RedirectRequest::fromArray($data);
 - [ ] `Notification` is created with `Notification::fromArray($data, $tranKey)` (or `$placetopay->readNotification($data)`)
 - [ ] `CollectRequest` receives `instrument` and `provider`, any other named argument is forwarded to `RedirectRequest`
 - [ ] The `LoaderTrait` and the `Entity::load()` / `Entity::loadEntity()` methods were removed, if you extended an entity map the attributes in your own `fromArray()`
+- [ ] `Credit` requires the `installment` when built with its constructor, use `Credit::oneInstallment()` for a single installment. `code()`, `type()` and `groupCode()` return `?string`
+- [ ] `Token::installments()` returns `?int` instead of a string
 
 ### Statuses and document types are enums
 

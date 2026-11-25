@@ -12,6 +12,7 @@ class Instrument extends Entity
         protected ?Credit $credit = null,
         protected string $pin = '',
         protected string $password = '',
+        protected string $pocket = '',
     ) {
     }
 
@@ -23,6 +24,7 @@ class Instrument extends Entity
             credit: self::parseEntity($data['credit'] ?? null, Credit::class),
             pin: $data['pin'] ?? '',
             password: $data['password'] ?? '',
+            pocket: (string)($data['pocket'] ?? ''),
         );
     }
 
@@ -51,6 +53,11 @@ class Instrument extends Entity
         return $this->password;
     }
 
+    public function pocket(): string
+    {
+        return $this->pocket;
+    }
+
     public function toArray(): array
     {
         return $this->arrayFilter([
@@ -59,6 +66,7 @@ class Instrument extends Entity
             'token' => $this->token()?->toArray(),
             'pin' => $this->pin(),
             'password' => $this->password(),
+            'pocket' => $this->pocket(),
         ]);
     }
 }

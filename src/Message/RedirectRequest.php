@@ -36,6 +36,7 @@ class RedirectRequest extends Entity
         protected bool $noBuyerFill = false,
         array $fields = [],
         protected array $metadata = [],
+        protected string $type = '',
     ) {
         $this->expiration = $expiration ?? date('c', strtotime('+1 day'));
         $this->setFields($fields);
@@ -68,6 +69,7 @@ class RedirectRequest extends Entity
             'noBuyerFill' => $data['noBuyerFill'] ?? false,
             'fields' => $data['fields'] ?? [],
             'metadata' => $data['metadata'] ?? [],
+            'type' => $data['type'] ?? '',
         ];
     }
 
@@ -194,6 +196,11 @@ class RedirectRequest extends Entity
         return filter_var($this->noBuyerFill, FILTER_VALIDATE_BOOLEAN);
     }
 
+    public function type(): string
+    {
+        return $this->type;
+    }
+
     public function metadata(): array
     {
         return $this->metadata;
@@ -217,6 +224,7 @@ class RedirectRequest extends Entity
             'captureAddress' => $this->captureAddress(),
             'skipResult' => $this->skipResult(),
             'noBuyerFill' => $this->noBuyerFill(),
+            'type' => $this->type(),
             'metadata' => $this->metadata(),
         ]);
     }

@@ -17,8 +17,10 @@ class Token extends Entity
         protected string $issuerName = '',
         protected string $lastDigits = '',
         protected string $validUntil = '',
+        protected string $bin = '',
+        protected string $owner = '',
         protected string $cvv = '',
-        protected int $installments = 0,
+        protected ?int $installments = null,
     ) {
     }
 
@@ -32,8 +34,10 @@ class Token extends Entity
             issuerName: $data['issuerName'] ?? '',
             lastDigits: $data['lastDigits'] ?? '',
             validUntil: $data['validUntil'] ?? '',
+            bin: $data['bin'] ?? '',
+            owner: $data['owner'] ?? '',
             cvv: $data['cvv'] ?? '',
-            installments: $data['installments'] ?? 0,
+            installments: is_numeric($data['installments'] ?? null) ? (int)$data['installments'] : null,
         );
     }
 
@@ -72,14 +76,24 @@ class Token extends Entity
         return $this->validUntil;
     }
 
+    public function bin(): string
+    {
+        return $this->bin;
+    }
+
+    public function owner(): string
+    {
+        return $this->owner;
+    }
+
     public function cvv(): string
     {
         return $this->cvv;
     }
 
-    public function installments(): string
+    public function installments(): ?int
     {
-        return (string)$this->installments;
+        return $this->installments;
     }
 
     public function expiration(): string
@@ -97,6 +111,8 @@ class Token extends Entity
             'issuerName' => $this->issuerName(),
             'lastDigits' => $this->lastDigits(),
             'validUntil' => $this->validUntil(),
+            'bin' => $this->bin(),
+            'owner' => $this->owner(),
             'cvv' => $this->cvv(),
             'installments' => $this->installments(),
         ]);
